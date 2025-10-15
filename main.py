@@ -1,93 +1,89 @@
-import tkinter as tk
 import random
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+from matplotlib.widgets import Button, RadioButtons
 import BFS, DFS, UCS
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
 
 
 class GridGame:
-    def __init__(self, gui):
-        self.root = gui
-        self.root.title("435 GUI")
-
-        SCREEN_WIDTH = gui.winfo_screenwidth()
-        SCREEN_HEIGHT = gui.winfo_screenheight()
-        WINDOW_WIDTH = int(SCREEN_WIDTH * 0.75)
-        WINDOW_HEIGHT = int(SCREEN_HEIGHT * 0.75)
-
-        x = (SCREEN_WIDTH - WINDOW_WIDTH) // 2
-        y = (SCREEN_HEIGHT - WINDOW_HEIGHT) // 2
-        self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{x}+{y}")
-        self.root.minsize(900, 700)
-
-        self.n = 8
-        self.PADDING_RATIO = 0.05  # 5% margin around edges
-
-        # Configure layout
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=0)
-        self.root.rowconfigure(1, weight=1)
-
-        # --- Controls ---
-        control_frame = tk.Frame(gui)
-        control_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=8)
-        for i in range(5):
-            control_frame.columnconfigure(i, weight=1)
-
-        self.decrease_button = tk.Button(control_frame, text="Decrease Size", command=self.decrease_size)
-        self.decrease_button.grid(row=0, column=0, padx=5, sticky="ew")
+    def __init__(self):
         
-        self.increase_button = tk.Button(control_frame, text="Increase Size", command=self.increase_size)
-        self.increase_button.grid(row=0, column=1, padx=5, sticky="ew")
-
-        self.size_label = tk.Label(control_frame, text=f"Grid Size: {self.n}x{self.n}", font=("Arial", 12, "bold"))
-        self.size_label.grid(row=0, column=2, padx=5, sticky="ew")
-
-        self.algorithm_var = tk.StringVar(value="BFS")
-        self.algorithm_menu = tk.OptionMenu(control_frame, self.algorithm_var, "BFS", "DFS", "UCS")
-        self.algorithm_menu.grid(row=0, column=3, padx=5, sticky="ew")
+        self.n = 8
+        self.PADDING_RATIO = 0.05
+        self.current_algorithm = "BFS"
         self.algorithms = {"BFS": BFS, "DFS": DFS, "UCS": UCS}
-
-        self.new_grid_button = tk.Button(control_frame, text="New Grid", command=self.create_new_grid)
-        self.new_grid_button.grid(row=0, column=4, padx=5, sticky="ew")
-
-        # --- Canvas Frame ---
-        self.canvas_frame = tk.Frame(gui, bg="white", highlightthickness=0, bd=0)
-        self.canvas_frame.grid(row=1, column=0, sticky="nsew")
-        self.canvas_frame.columnconfigure(0, weight=1)
-        self.canvas_frame.rowconfigure(0, weight=1)
-
-        # Matplotlib figure
-        self.fig = plt.Figure(dpi=100)
-        self.ax = self.fig.add_axes([0, 0, 1, 1])  # use full canvas
+        
+        # Create figure and main axes
+        self.fig = plt.figure(figsize=(12, 10))
+        self.fig.canvas.manager.set_window_title("435 GUI")
+        
+        # Center window and set to 70% of screen size
+        manager = plt.get_current_fig_manager()
+        try:
+            # Get screen dimensions
+            screen_width = manager.window.winfo_screenwidth()
+            screen_height = manager.window.winfo_screenheight()
+            
+            # Calculate 70% dimensions
+            window_width = int(screen_width * 0.7)
+            window_height = int(screen_height * 0.7)
+            
+            # Calculate position to center
+            x_pos = int((screen_width - window_width) / 2)
+            y_pos = int((screen_height - window_height) / 2)
+            
+            # Set geometry
+            manager.window.geometry(f"{window_width}x{window_height}+{x_pos}+{y_pos}")
+        except:
+            # Fallback for non-Tkinter backends
+            pass
+        
+        # Main grid axes
+        self.ax = self.fig.add_axes([0.05, 0.15, 0.9, 0.8])
         self.ax.axis("off")
-
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.canvas_frame)
-        self.canvas_widget = self.canvas.get_tk_widget()
-        self.canvas_widget.grid(row=0, column=0, sticky="nsew")
-
-        self.canvas_frame.bind("<Configure>", self._on_resize)
-
+        
+        # Create buttons
+        button_y = 0.05
+        button_height = 0.06
+        
+        ax_decrease = self.fig.add_axes([0.05, button_y, 0.15, button_height])
+        self.btn_decrease = Button(ax_decrease, 'Decrease Size')
+        self.btn_decrease.on_clicked(self.decrease_size)
+        
+        ax_increase = self.fig.add_axes([0.21, button_y, 0.15, button_height])
+        self.btn_increase = Button(ax_increase, 'Increase Size')
+        self.btn_increase.on_clicked(self.increase_size)
+        
+        ax_bfs = self.fig.add_axes([0.37, button_y, 0.08, button_height])
+        self.btn_bfs = Button(ax_bfs, 'BFS')
+        self.btn_bfs.on_clicked(lambda event: self.set_algorithm('BFS'))
+        
+        ax_dfs = self.fig.add_axes([0.46, button_y, 0.08, button_height])
+        self.btn_dfs = Button(ax_dfs, 'DFS')
+        self.btn_dfs.on_clicked(lambda event: self.set_algorithm('DFS'))
+        
+        ax_ucs = self.fig.add_axes([0.55, button_y, 0.08, button_height])
+        self.btn_ucs = Button(ax_ucs, 'UCS')
+        self.btn_ucs.on_clicked(lambda event: self.set_algorithm('UCS'))
+        
+        ax_new_grid = self.fig.add_axes([0.70, button_y, 0.25, button_height])
+        self.btn_new_grid = Button(ax_new_grid, 'New Grid')
+        self.btn_new_grid.on_clicked(self.create_new_grid)
+        
         self.create_grid()
+        plt.show()
 
-    def _on_resize(self, event):
-        width, height = max(1, event.width), max(1, event.height)
-        dpi = self.fig.get_dpi()
-        self.fig.set_size_inches(width / dpi, height / dpi, forward=True)
+    def set_algorithm(self, algo):
+        self.current_algorithm = algo
+        self.update_title()
 
-        pad = self.PADDING_RATIO
-        self.ax.set_position([pad, pad, 1 - 2 * pad, 1 - 2 * pad])
-        self.ax.set_xlim(0, self.n)
-        self.ax.set_ylim(0, self.n)
-        self.canvas.draw_idle()
+    def update_title(self):
+        self.fig.suptitle(f"Grid Size: {self.n}x{self.n} | Algorithm: {self.current_algorithm}", 
+                         fontsize=14, fontweight='bold')
+        self.fig.canvas.draw_idle()
 
     def create_grid(self):
         self.ax.clear()
-
-        pad = self.PADDING_RATIO
-        self.ax.set_position([pad, pad, 1 - 2 * pad, 1 - 2 * pad])
         self.ax.set_xlim(0, self.n)
         self.ax.set_ylim(0, self.n)
         self.ax.axis("off")
@@ -124,23 +120,21 @@ class GridGame:
                     self.ax.text(j + 0.5, self.n - i - 0.5, val, ha='center', va='center',
                                  color=fg, fontsize=max(10, 180 // self.n), fontweight='bold')
 
-        self.canvas.draw()
-        self.size_label.config(text=f"Grid Size: {self.n}x{self.n}")
+        self.update_title()
+        self.fig.canvas.draw_idle()
 
-    def increase_size(self):
+    def increase_size(self, event):
         self.n += 1
         self.create_grid()
 
-    def decrease_size(self):
+    def decrease_size(self, event):
         if self.n > 8:
             self.n -= 1
             self.create_grid()
 
-    def create_new_grid(self):
+    def create_new_grid(self, event):
         self.create_grid()
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    GridGame(root)
-    root.mainloop()
+    GridGame()
