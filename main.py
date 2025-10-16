@@ -5,6 +5,7 @@ from matplotlib.widgets import Button, RadioButtons
 import BFS, DFS, UCS
 
 
+
 class GridGame:
     def __init__(self):
         
@@ -119,6 +120,7 @@ class GridGame:
                 if val.strip():
                     self.ax.text(j + 0.5, self.n - i - 0.5, val, ha='center', va='center',
                                  color=fg, fontsize=max(10, 180 // self.n), fontweight='bold')
+        self.grid = grid
 
         self.update_title()
         self.fig.canvas.draw_idle()
