@@ -57,15 +57,15 @@ class GridGame:
         
         ax_bfs = self.fig.add_axes([0.37, button_y, 0.08, button_height])
         self.btn_bfs = Button(ax_bfs, 'BFS')
-        self.btn_bfs.on_clicked(lambda event: self.set_algorithm('BFS'))
+        self.btn_bfs.on_clicked(lambda event: self.do_BFS())
         
         ax_dfs = self.fig.add_axes([0.46, button_y, 0.08, button_height])
         self.btn_dfs = Button(ax_dfs, 'DFS')
-        self.btn_dfs.on_clicked(lambda event: self.set_algorithm('DFS'))
+        self.btn_dfs.on_clicked(lambda event: self.do_DFS())
         
         ax_ucs = self.fig.add_axes([0.55, button_y, 0.08, button_height])
         self.btn_ucs = Button(ax_ucs, 'UCS')
-        self.btn_ucs.on_clicked(lambda event: self.set_algorithm('UCS'))
+        self.btn_ucs.on_clicked(lambda event: self.do_UCS())
         
         ax_new_grid = self.fig.add_axes([0.70, button_y, 0.25, button_height])
         self.btn_new_grid = Button(ax_new_grid, 'New Grid')
@@ -93,10 +93,16 @@ class GridGame:
         treasure = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
         grid[treasure[0]][treasure[1]] = 'T'
 
+        # record ending position
+        self.end = (treasure[0], treasure[1])
+
         while True:
             start = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
             if start != treasure:
                 grid[start[0]][start[1]] = 'S'
+
+                # record start position for searching
+                self.start = (start[0], start[1])
                 break
 
         while True:
@@ -142,6 +148,24 @@ class GridGame:
 
     def create_new_grid(self, event):
         self.create_grid()
+
+    # --- Uninformed searches ---
+    def do_BFS(self) -> None:
+        self.set_algorithm('BFS')
+        # Declare the visited array
+        # vis = [[ False for i in range(self.n)] for i in range(self.n)]
+
+        # BFS.BFS(self.grid, vis, self.start[0], self.start[1])
+
+        # print(self.start)
+        # print(self.end)
+        print(BFS.bfs_path(self.grid, self.start, self.end))
+
+    def do_DFS(self) -> None:
+        self.set_algorithm('DFS')
+
+    def do_UCS(self) -> None:
+        self.set_algorithm('UCS')
 
 
 if __name__ == "__main__":
