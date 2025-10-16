@@ -11,7 +11,7 @@ class GridGame:
         
         self.n = 8
         self.PADDING_RATIO = 0.05
-        self.current_algorithm = "BFS"
+        self.current_algorithm = "None"
         self.algorithms = {"BFS": BFS, "DFS": DFS, "UCS": UCS}
         
         # Create figure and main axes
@@ -79,7 +79,7 @@ class GridGame:
         self.update_title()
 
     def update_title(self):
-        self.fig.suptitle(f"Grid Size: {self.n}x{self.n} | Algorithm: {self.current_algorithm}", 
+        self.fig.suptitle(f"Grid Size: {self.n}x{self.n} | Algorithm: {self.current_algorithm} | Cost: 0", 
                          fontsize=14, fontweight='bold')
         self.fig.canvas.draw_idle()
 
@@ -94,8 +94,14 @@ class GridGame:
         grid[treasure[0]][treasure[1]] = 'T'
 
         while True:
+            start = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
+            if start != treasure:
+                grid[start[0]][start[1]] = 'S'
+                break
+
+        while True:
             trap = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
-            if trap != treasure:
+            if trap != treasure and trap != start:
                 grid[trap[0]][trap[1]] = 'X'
                 break
 
@@ -110,7 +116,7 @@ class GridGame:
         for i in range(self.n):
             for j in range(self.n):
                 val = grid[i][j]
-                color = {'T': 'gold', 'X': 'red', '#': 'gray'}.get(val, 'white')
+                color = {'T': 'gold', 'X': 'red', '#': 'gray', 'S': 'blue'}.get(val, 'white')
                 fg = 'white' if val in ['T', 'X', '#'] else 'black'
 
                 rect = patches.Rectangle((j, self.n - i - 1), 1, 1,
