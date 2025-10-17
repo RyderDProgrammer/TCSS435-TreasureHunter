@@ -12,6 +12,8 @@ class GridGame:
         self.n = 8
         self.PADDING_RATIO = 0.05
         self.current_algorithm = "None"
+        self.current_cost = 0
+        self.solution_path = []
         self.algorithms = {"BFS": BFS, "DFS": DFS, "UCS": UCS}
         
         # Create figure and main axes
@@ -79,7 +81,7 @@ class GridGame:
         self.update_title()
 
     def update_title(self):
-        self.fig.suptitle(f"Grid Size: {self.n}x{self.n} | Algorithm: {self.current_algorithm} | Cost: 0", 
+        self.fig.suptitle(f"Grid Size: {self.n}x{self.n} | Algorithm: {self.current_algorithm} | Cost: {self.current_cost}", 
                          fontsize=14, fontweight='bold')
         self.fig.canvas.draw_idle()
 
@@ -147,7 +149,17 @@ class GridGame:
             self.create_grid()
 
     def create_new_grid(self, event):
+        self.solution_path = []
+        self.current_cost = 0
+        self.set_algorithm("None")
         self.create_grid()
+    
+    def highlight_solution_path(self):
+        for (i, j) in self.solution_path[1:-1]:  # Exclude start and end
+            rect = patches.Rectangle((j, self.n - i - 1), 1, 1,
+                                    facecolor='lightblue', edgecolor='black', linewidth=1.3)
+            self.ax.add_patch(rect)
+        self.fig.canvas.draw_idle()
 
     # --- Uninformed searches ---
     def do_BFS(self) -> None:
@@ -159,13 +171,21 @@ class GridGame:
 
         # print(self.start)
         # print(self.end)
-        print(BFS.bfs_path(self.grid, self.start, self.end))
-
+        self.solution_path = BFS.bfs_path(self.grid, self.start, self.end)
+        self.algorithm_updates()
+        
     def do_DFS(self) -> None:
         self.set_algorithm('DFS')
 
     def do_UCS(self) -> None:
         self.set_algorithm('UCS')
+        
+    def algorithm_updates(self) -> None:
+        self.current_cost = len(self.solution_path) - 1 if self.solution_path else 0
+        self.update_title()
+        self.highlight_solution_path()
+        print(self.solution_path)
+
 
 
 if __name__ == "__main__":
