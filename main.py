@@ -164,18 +164,13 @@ class GridGame:
     # --- Uninformed searches ---
     def do_BFS(self) -> None:
         self.set_algorithm('BFS')
-        # Declare the visited array
-        # vis = [[ False for i in range(self.n)] for i in range(self.n)]
-
-        # BFS.BFS(self.grid, vis, self.start[0], self.start[1])
-
-        # print(self.start)
-        # print(self.end)
-        self.solution_path = BFS.bfs_path(self.grid, self.start, self.end)
+        self.solution_path = BFS.BFS(self.grid, self.start, self.end)
         self.algorithm_updates()
         
     def do_DFS(self) -> None:
         self.set_algorithm('DFS')
+        self.solution_path = DFS.DFS(self.grid, self.start, self.end)
+        self.algorithm_updates()
 
     def do_UCS(self) -> None:
         self.set_algorithm('UCS')
@@ -185,7 +180,6 @@ class GridGame:
         self.update_title()
         self.highlight_solution_path()
         print(self.solution_path)
-
 
 
 if __name__ == "__main__":

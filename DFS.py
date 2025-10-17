@@ -1,17 +1,24 @@
 from collections import deque
+import time
+
+# Number of expanded nodes
+DFS_EXPANDED = 0
+
+# Runtime
+DFS_RUNTIME = 0
 
 def DFS(grid, start, end):
     n = len(grid)
     directions = [(-1,0), (0,1), (0,-1), (1,0)]  # Up, Right, Left, Down
-    nodes_expanded = 0
+    DFS_EXPANDED = 0
 
-    queue = deque([start])
+    stack = [start]
     visited = set([start])
     parent = {start: None}  # To reconstruct path
 
-    while queue:
-        current = queue.popleft()
-        nodes_expanded += 1
+    while stack:
+        current = stack.pop()
+        DFS_EXPANDED += 1
 
         # Check if we've reached the goal
         if current == end:
@@ -21,7 +28,6 @@ def DFS(grid, start, end):
                 path.append(current)
                 current = parent[current]
             path.reverse()
-            print(f'Nodes Expanded: {nodes_expanded}')
             return path
 
         # Explore neighbors
@@ -32,6 +38,6 @@ def DFS(grid, start, end):
                 if (grid[nr][nc] == ' ' or grid[nr][nc] == 'T') and (nr, nc) not in visited:
                     visited.add((nr, nc))
                     parent[(nr, nc)] = (r, c)
-                    queue.appendleft((nr, nc))
+                    stack.append((nr, nc))
 
     return None  # No path found
