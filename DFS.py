@@ -1,16 +1,7 @@
-from collections import deque
-import time
-
-# Number of expanded nodes
-DFS_EXPANDED = 0
-
-# Runtime
-DFS_RUNTIME = 0
-
 def DFS(grid, start, end):
     n = len(grid)
     directions = [(-1,0), (0,1), (0,-1), (1,0)]  # Up, Right, Left, Down
-    DFS_EXPANDED = 0
+    expanded_nodes = 0
 
     stack = [start]
     visited = set([start])
@@ -18,7 +9,7 @@ def DFS(grid, start, end):
 
     while stack:
         current = stack.pop()
-        DFS_EXPANDED += 1
+        expanded_nodes += 1
 
         # Check if we've reached the goal
         if current == end:
@@ -28,7 +19,7 @@ def DFS(grid, start, end):
                 path.append(current)
                 current = parent[current]
             path.reverse()
-            return path
+            return path, expanded_nodes
 
         # Explore neighbors
         r, c = current
@@ -40,4 +31,4 @@ def DFS(grid, start, end):
                     parent[(nr, nc)] = (r, c)
                     stack.append((nr, nc))
 
-    return None  # No path found
+    return None, expanded_nodes  # No path found

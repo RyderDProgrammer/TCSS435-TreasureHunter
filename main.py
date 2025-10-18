@@ -1,4 +1,5 @@
 import random
+import time
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.widgets import Button, RadioButtons
@@ -164,16 +165,33 @@ class GridGame:
     # --- Uninformed searches ---
     def do_BFS(self) -> None:
         self.set_algorithm('BFS')
-        self.solution_path = BFS.BFS(self.grid, self.start, self.end)
+        start_time = time.time()
+        self.solution_path, nodes_Expanded = BFS.BFS(self.grid, self.start, self.end)
         self.algorithm_updates()
+        end_time = time.time()
+        runtime = end_time - start_time
+        print(f"Runtime: {runtime}")
+        print(f"Nodes Expanded: {nodes_Expanded}")
         
     def do_DFS(self) -> None:
         self.set_algorithm('DFS')
-        self.solution_path = DFS.DFS(self.grid, self.start, self.end)
+        start_time = time.time()
+        self.solution_path, expanded_nodes = DFS.DFS(self.grid, self.start, self.end)
         self.algorithm_updates()
+        end_time = time.time()
+        runtime = end_time - start_time
+        print(f"Runtime: {runtime}")
+        print(f"Nodes Expanded: {expanded_nodes}")
 
     def do_UCS(self) -> None:
         self.set_algorithm('UCS')
+        start_time = time.time()
+        self.solution_path, expanded_nodes = UCS.UCS(self.grid, self.start, self.end)
+        self.algorithm_updates()
+        end_time = time.time()
+        runtime = end_time - start_time
+        print(f"Runtime: {runtime}")
+        print(f"Nodes Expanded: {expanded_nodes}")
         
     def algorithm_updates(self) -> None:
         self.current_cost = len(self.solution_path) - 1 if self.solution_path else 0

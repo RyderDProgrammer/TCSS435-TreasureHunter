@@ -1,16 +1,9 @@
 from collections import deque
-import time
-
-# Number of expanded nodes
-BFS_EXPANDED = 0
-
-# Runtime
-BFS_RUNTIME = 0
 
 def BFS(grid, start, end):
     n = len(grid)
     directions = [(-1,0), (0,1), (0,-1), (1,0)]  # Up, Right, Left, Down
-    BFS_EXPANDED = 0
+    expanded_nodes = 0
 
     queue = deque([start])
     visited = set([start])
@@ -18,7 +11,7 @@ def BFS(grid, start, end):
 
     while queue:
         current = queue.popleft()
-        BFS_EXPANDED += 1
+        expanded_nodes += 1
 
         # Check if we've reached the goal
         if current == end:
@@ -28,7 +21,7 @@ def BFS(grid, start, end):
                 path.append(current)
                 current = parent[current]
             path.reverse()
-            return path
+            return path, expanded_nodes
 
         # Explore neighbors
         r, c = current
@@ -40,4 +33,4 @@ def BFS(grid, start, end):
                     parent[(nr, nc)] = (r, c)
                     queue.append((nr, nc))
 
-    return None  # No path found
+    return None, expanded_nodes  # No path found
