@@ -15,7 +15,6 @@ class GridGame:
         self.current_algorithm = "None"
         self.current_cost = 0
         self.solution_path = []
-        self.algorithms = {"BFS": BFS, "DFS": DFS, "UCS": UCS}
         
         # Create figure and main axes
         self.fig = plt.figure(figsize=(12, 10))
@@ -47,32 +46,35 @@ class GridGame:
         self.ax.axis("off")
         
         # Create buttons
-        button_y = 0.05
-        button_height = 0.06
+        BUTTON_Y = 0.05
+        BUTTON_HEIGHT = 0.06
+        BUTTON_WIDTH_SMALL = 0.08
+        BUTTON_WIDTH_MEDIUM = 0.15
+        BUTTON_WIDTH_LARGE = 0.25
         
-        ax_decrease = self.fig.add_axes([0.05, button_y, 0.15, button_height])
+        ax_decrease = self.fig.add_axes([0.05, BUTTON_Y, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
         self.btn_decrease = Button(ax_decrease, 'Decrease Size')
         self.btn_decrease.on_clicked(self.decrease_size)
         
-        ax_increase = self.fig.add_axes([0.21, button_y, 0.15, button_height])
+        ax_increase = self.fig.add_axes([0.21, BUTTON_Y, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
         self.btn_increase = Button(ax_increase, 'Increase Size')
         self.btn_increase.on_clicked(self.increase_size)
         
-        ax_bfs = self.fig.add_axes([0.37, button_y, 0.08, button_height])
+        ax_bfs = self.fig.add_axes([0.37, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
         self.btn_bfs = Button(ax_bfs, 'BFS')
-        self.btn_bfs.on_clicked(lambda event: self.do_BFS())
+        self.btn_bfs.on_clicked(self.do_BFS)
         
-        ax_dfs = self.fig.add_axes([0.46, button_y, 0.08, button_height])
+        ax_dfs = self.fig.add_axes([0.46, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
         self.btn_dfs = Button(ax_dfs, 'DFS')
-        self.btn_dfs.on_clicked(lambda event: self.do_DFS())
+        self.btn_dfs.on_clicked(self.do_DFS)
         
-        ax_ucs = self.fig.add_axes([0.55, button_y, 0.08, button_height])
+        ax_ucs = self.fig.add_axes([0.55, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
         self.btn_ucs = Button(ax_ucs, 'UCS')
-        self.btn_ucs.on_clicked(lambda event: self.do_UCS())
+        self.btn_ucs.on_clicked(self.do_UCS)
         
-        ax_new_grid = self.fig.add_axes([0.70, button_y, 0.25, button_height])
+        ax_new_grid = self.fig.add_axes([0.70, BUTTON_Y, BUTTON_WIDTH_LARGE, BUTTON_HEIGHT])
         self.btn_new_grid = Button(ax_new_grid, 'New Grid')
-        self.btn_new_grid.on_clicked(lambda event: self.create_grid())
+        self.btn_new_grid.on_clicked(self.create_grid)
         
         self.create_grid()
         plt.show()
@@ -86,7 +88,7 @@ class GridGame:
                          fontsize=14, fontweight='bold')
         self.fig.canvas.draw_idle()
 
-    def create_grid(self):
+    def create_grid(self, event=None):
         self.ax.clear()
         self.solution_path = []
         self.current_cost = 0
@@ -180,13 +182,13 @@ class GridGame:
         print(f"Runtime: {runtime}")
         print(f"Nodes Expanded: {expanded_nodes}")
         
-    def do_BFS(self) -> None:
+    def do_BFS(self, event=None) -> None:
         self.algorithm_helper('BFS', BFS.BFS)
         
-    def do_DFS(self) -> None:
+    def do_DFS(self, event=None) -> None:
         self.algorithm_helper('DFS', DFS.DFS)
 
-    def do_UCS(self) -> None:
+    def do_UCS(self, event=None) -> None:
         self.algorithm_helper('UCS', UCS.UCS)
         
     def algorithm_updates(self) -> None:
