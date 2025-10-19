@@ -1,5 +1,3 @@
-import heapq
-
 def UCS(grid, start, end):
     n = len(grid)
     directions = [(-1,0), (0,1), (0,-1), (1,0)]  # Up, Right, Left, Down
@@ -11,7 +9,8 @@ def UCS(grid, start, end):
     cost_so_far = {start: 0}
 
     while pq:
-        current_cost, current = heapq.heappop(pq)
+        pq.sort()  # smallest cost comes first
+        current_cost, current = pq.pop(0)
         expanded_nodes += 1
 
         # Check if we've reached the goal
@@ -35,6 +34,6 @@ def UCS(grid, start, end):
                     visited.add((nr, nc))
                     cost_so_far[(nr, nc)] = new_cost
                     parent[(nr, nc)] = current
-                    heapq.heappush(pq, (new_cost, (nr, nc)))
+                    pq.append((new_cost, (nr, nc)))
 
     return None, expanded_nodes  # No path found

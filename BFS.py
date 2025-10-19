@@ -1,16 +1,14 @@
-from collections import deque
-
 def BFS(grid, start, end):
     n = len(grid)
     directions = [(-1,0), (0,1), (0,-1), (1,0)]  # Up, Right, Left, Down
     expanded_nodes = 0
 
-    queue = deque([start])
+    queue = [start]
     visited = set([start])
     parent = {start: None}  # To reconstruct path
 
     while queue:
-        current = queue.popleft()
+        current = queue.pop(0)
         expanded_nodes += 1
 
         # Check if we've reached the goal
