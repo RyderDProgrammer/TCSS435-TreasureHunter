@@ -14,6 +14,7 @@ class GridGame:
         self.PADDING_RATIO = 0.05
         self.current_algorithm = "None"
         self.current_cost = 0
+        self.current_runtime = 0.0
         self.solution_path = []
         
         # Create figure and main axes
@@ -84,14 +85,17 @@ class GridGame:
         self.update_title()
 
     def update_title(self):
-        self.fig.suptitle(f"Grid Size: {self.n}x{self.n} | Algorithm: {self.current_algorithm} | Cost: {self.current_cost}", 
-                         fontsize=14, fontweight='bold')
+        runtime_str = f"{self.current_runtime:.4f}s" if self.current_runtime > 0 else "N/A"
+        self.fig.suptitle(
+            f"Grid Size: {self.n}x{self.n} | Algorithm: {self.current_algorithm} | Cost: {self.current_cost} | Runtime: {runtime_str}",
+            fontsize=14, fontweight='bold')
         self.fig.canvas.draw_idle()
 
     def create_grid(self, event=None):
         self.ax.clear()
         self.solution_path = []
         self.current_cost = 0
+        self.current_runtime = 0.0
         self.set_algorithm("None")
         self.ax.set_xlim(0, self.n)
         self.ax.set_ylim(0, self.n)
@@ -170,16 +174,16 @@ class GridGame:
     
 
     # --- Uninformed searches ---
-    
+
     def algorithm_helper(self, algorithm_name: str, algorithm_func) -> None:
         self.reset_solution_highlight()
         self.set_algorithm(algorithm_name)
         start_time = time.time()
         self.solution_path, expanded_nodes = algorithm_func(self.grid, self.start, self.end)
-        self.algorithm_updates()
         end_time = time.time()
-        runtime = end_time - start_time
-        print(f"Runtime: {runtime}")
+        self.current_runtime = end_time - start_time
+        self.algorithm_updates()
+        print(f"Runtime: {self.current_runtime:.4f}s")
         print(f"Nodes Expanded: {expanded_nodes}")
         
     def do_BFS(self, event=None) -> None:
