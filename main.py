@@ -2,15 +2,12 @@ import random
 import time
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from matplotlib.widgets import Button, RadioButtons
+from matplotlib.widgets import Button
 import BFS, DFS, UCS
-
-
 
 class GridGame:
     def __init__(self):
-        
-        self.n = 8
+        self.n = 10
         self.PADDING_RATIO = 0.05
         self.current_algorithm = "None"
         self.current_cost = 0
@@ -171,10 +168,7 @@ class GridGame:
     def reset_solution_highlight(self):
         self.solution_path_helper('white')
         
-    
-
     # --- Uninformed searches ---
-
     def algorithm_helper(self, algorithm_name: str, algorithm_func) -> None:
         self.reset_solution_highlight()
         self.set_algorithm(algorithm_name)
@@ -183,8 +177,9 @@ class GridGame:
         end_time = time.time()
         self.current_runtime = end_time - start_time
         self.algorithm_updates()
-        print(f"Runtime: {self.current_runtime:.4f}s")
+        print(f"Runtime {algorithm_name}: {self.current_runtime:.4f}s")
         print(f"Nodes Expanded: {expanded_nodes}")
+        print(f"Total Cost: {self.current_cost}")
         
     def do_BFS(self, event=None) -> None:
         self.algorithm_helper('BFS', BFS.BFS)
@@ -200,7 +195,6 @@ class GridGame:
         self.update_title()
         self.highlight_solution_path()
         print(self.solution_path)
-
 
 if __name__ == "__main__":
     GridGame()
