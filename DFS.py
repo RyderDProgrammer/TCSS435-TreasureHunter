@@ -26,7 +26,7 @@ def DFS(grid, start, end):
         for dr, dc in directions:
             nr, nc = r + dr, c + dc
             if 0 <= nr < n and 0 <= nc < n:  # Within bounds
-                if (grid[nr][nc] == ' ' or grid[nr][nc] == 'T') and (nr, nc) not in visited:
+                if (grid[nr][nc] != '#') and (nr, nc) not in visited:
                     visited.add((nr, nc))
                     parent[(nr, nc)] = (r, c)
                     stack.append((nr, nc))

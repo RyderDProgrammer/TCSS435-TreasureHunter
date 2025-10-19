@@ -27,7 +27,7 @@ def UCS(grid, start, end):
         for dr, dc in directions:
             nr, nc = r + dr, c + dc
             if 0 <= nr < n and 0 <= nc < n:
-                if grid[nr][nc] == 'X' or grid[nr][nc] == '#':  # Obstacle
+                if grid[nr][nc] == '#':  # Obstacle
                     continue
                 new_cost = current_cost + 1  # cost of each move is 1
                 if (nr, nc) not in cost_so_far or new_cost < cost_so_far[(nr, nc)]:
