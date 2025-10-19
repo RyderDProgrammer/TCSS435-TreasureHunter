@@ -154,20 +154,21 @@ class GridGame:
         self.current_cost = 0
         self.set_algorithm("None")
         self.create_grid()
+        
+    def solution_path_helper(self, color: str) -> None:
+        for (i, j) in self.solution_path[1:-1]:  # Exclude start and end
+            rect = patches.Rectangle((j, self.n - i - 1), 1, 1,
+                                    facecolor=color, edgecolor='black', linewidth=1.3)
+            self.ax.add_patch(rect)
+        self.fig.canvas.draw_idle()
     
     def highlight_solution_path(self):
-        for (i, j) in self.solution_path[1:-1]:  # Exclude start and end
-            rect = patches.Rectangle((j, self.n - i - 1), 1, 1,
-                                    facecolor='lightblue', edgecolor='black', linewidth=1.3)
-            self.ax.add_patch(rect)
-        self.fig.canvas.draw_idle()
+        self.solution_path_helper('lightblue')
         
     def reset_solution_highlight(self):
-        for (i, j) in self.solution_path[1:-1]:  # Exclude start and end
-            rect = patches.Rectangle((j, self.n - i - 1), 1, 1,
-                                    facecolor='white', edgecolor='black', linewidth=1.3)
-            self.ax.add_patch(rect)
-        self.fig.canvas.draw_idle()
+        self.solution_path_helper('white')
+        
+    
 
     # --- Uninformed searches ---
     
