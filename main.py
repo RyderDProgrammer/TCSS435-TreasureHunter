@@ -161,37 +161,35 @@ class GridGame:
                                     facecolor='lightblue', edgecolor='black', linewidth=1.3)
             self.ax.add_patch(rect)
         self.fig.canvas.draw_idle()
+        
+    def reset_solution_highlight(self):
+        for (i, j) in self.solution_path[1:-1]:  # Exclude start and end
+            rect = patches.Rectangle((j, self.n - i - 1), 1, 1,
+                                    facecolor='white', edgecolor='black', linewidth=1.3)
+            self.ax.add_patch(rect)
+        self.fig.canvas.draw_idle()
 
     # --- Uninformed searches ---
-    def do_BFS(self) -> None:
-        self.set_algorithm('BFS')
+    
+    def algorithm_helper(self, algorithm_name: str, algorithm_func) -> None:
+        self.reset_solution_highlight()
+        self.set_algorithm(algorithm_name)
         start_time = time.time()
-        self.solution_path, nodes_Expanded = BFS.BFS(self.grid, self.start, self.end)
+        self.solution_path, expanded_nodes = algorithm_func(self.grid, self.start, self.end)
         self.algorithm_updates()
         end_time = time.time()
         runtime = end_time - start_time
         print(f"Runtime: {runtime}")
-        print(f"Nodes Expanded: {nodes_Expanded}")
+        print(f"Nodes Expanded: {expanded_nodes}")
+        
+    def do_BFS(self) -> None:
+        self.algorithm_helper('BFS', BFS.BFS)
         
     def do_DFS(self) -> None:
-        self.set_algorithm('DFS')
-        start_time = time.time()
-        self.solution_path, expanded_nodes = DFS.DFS(self.grid, self.start, self.end)
-        self.algorithm_updates()
-        end_time = time.time()
-        runtime = end_time - start_time
-        print(f"Runtime: {runtime}")
-        print(f"Nodes Expanded: {expanded_nodes}")
+        self.algorithm_helper('DFS', DFS.DFS)
 
     def do_UCS(self) -> None:
-        self.set_algorithm('UCS')
-        start_time = time.time()
-        self.solution_path, expanded_nodes = UCS.UCS(self.grid, self.start, self.end)
-        self.algorithm_updates()
-        end_time = time.time()
-        runtime = end_time - start_time
-        print(f"Runtime: {runtime}")
-        print(f"Nodes Expanded: {expanded_nodes}")
+        self.algorithm_helper('UCS', UCS.UCS)
         
     def algorithm_updates(self) -> None:
         self.current_cost = len(self.solution_path) - 1 if self.solution_path else 0
