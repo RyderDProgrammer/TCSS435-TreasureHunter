@@ -1,6 +1,2 @@
-__pycache__/BFS.cpython-313.pyc
-__pycache__/DFS.cpython-313.pyc
-__pycache__/UCS.cpython-313.pyc
-__pycache__/BFS.cpython-312.pyc
-__pycache__/DFS.cpython-312.pyc
-__pycache__/UCS.cpython-312.pyc
+**/__pycache__
+**/*.pyc
