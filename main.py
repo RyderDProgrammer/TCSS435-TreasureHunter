@@ -118,6 +118,7 @@ class GridGame:
             trap = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
             if trap != treasure and trap != start:
                 grid[trap[0]][trap[1]] = 'X'
+                self.Trap = trap
                 break
 
         num_walls = random.randint(int(self.n ** 2 * 0.1), int(self.n ** 2 * 0.15))
@@ -159,6 +160,10 @@ class GridGame:
         for (i, j) in self.solution_path[1:-1]:  # Exclude start and end
             rect = patches.Rectangle((j, self.n - i - 1), 1, 1,
                                     facecolor=color, edgecolor='black', linewidth=1.3)
+            if (self.grid[i][j] == 'X' ):
+                rect.set_color('purple')
+            if(self.grid[i][j] == 'X' and color == 'white'):
+                rect.set_color('red')
             self.ax.add_patch(rect)
         self.fig.canvas.draw_idle()
     
