@@ -72,7 +72,7 @@ class GridGame:
         
         ax_new_grid = self.fig.add_axes([0.70, button_y, 0.25, button_height])
         self.btn_new_grid = Button(ax_new_grid, 'New Grid')
-        self.btn_new_grid.on_clicked(self.create_new_grid)
+        self.btn_new_grid.on_clicked(lambda event: self.create_grid())
         
         self.create_grid()
         plt.show()
@@ -88,6 +88,9 @@ class GridGame:
 
     def create_grid(self):
         self.ax.clear()
+        self.solution_path = []
+        self.current_cost = 0
+        self.set_algorithm("None")
         self.ax.set_xlim(0, self.n)
         self.ax.set_ylim(0, self.n)
         self.ax.axis("off")
@@ -148,12 +151,6 @@ class GridGame:
         if self.n > 8:
             self.n -= 1
             self.create_grid()
-
-    def create_new_grid(self, event):
-        self.solution_path = []
-        self.current_cost = 0
-        self.set_algorithm("None")
-        self.create_grid()
         
     def solution_path_helper(self, color: str) -> None:
         for (i, j) in self.solution_path[1:-1]:  # Exclude start and end
