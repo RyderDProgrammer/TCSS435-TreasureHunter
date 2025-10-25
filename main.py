@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.widgets import Button
 import BFS, DFS, UCS
+import A_Star, Greedy_BFS
 
 class GridGame:
     def __init__(self):
@@ -69,8 +70,16 @@ class GridGame:
         ax_ucs = self.fig.add_axes([0.55, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
         self.btn_ucs = Button(ax_ucs, 'UCS')
         self.btn_ucs.on_clicked(self.do_UCS)
+
+        ax_a_star = self.fig.add_axes([0.64, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
+        self.btn_a_star = Button(ax_a_star, 'A*')
+        self.btn_a_star.on_clicked(self.do_A_Star)
+
+        ax_greedy = self.fig.add_axes([0.73, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
+        self.btn_greedy = Button(ax_greedy, 'Greedy BFS')
+        self.btn_greedy.on_clicked(self.do_Greedy_BFS)
         
-        ax_new_grid = self.fig.add_axes([0.70, BUTTON_Y, BUTTON_WIDTH_LARGE, BUTTON_HEIGHT])
+        ax_new_grid = self.fig.add_axes([0.82, BUTTON_Y, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
         self.btn_new_grid = Button(ax_new_grid, 'New Grid')
         self.btn_new_grid.on_clicked(self.create_grid)
         
@@ -194,6 +203,13 @@ class GridGame:
 
     def do_UCS(self, event=None) -> None:
         self.algorithm_helper('UCS', UCS.UCS)
+
+    # --- Informed Searches ---
+    def do_A_Star(self) -> None:
+        self.algorithm_helper('A*', A_Star.A_Star)
+
+    def do_Greedy_BFS(self) -> None:
+        self.algorithm_helper('Greedy Best-First Search', Greedy_BFS.Greedy_BFS)
         
     def algorithm_updates(self) -> None:
         self.current_cost = len(self.solution_path) - 1 if self.solution_path else 0
