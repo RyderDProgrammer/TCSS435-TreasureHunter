@@ -205,10 +205,10 @@ class GridGame:
         self.algorithm_helper('UCS', UCS.UCS)
 
     # --- Informed Searches ---
-    def do_A_Star(self) -> None:
+    def do_A_Star(self, event=None) -> None:
         self.algorithm_helper('A*', A_Star.A_Star)
 
-    def do_Greedy_BFS(self) -> None:
+    def do_Greedy_BFS(self, event=None) -> None:
         self.algorithm_helper('Greedy Best-First Search', Greedy_BFS.Greedy_BFS)
         
     def algorithm_updates(self) -> None:
