@@ -8,12 +8,15 @@ import A_Star, Greedy_BFS
 
 class GridGame:
     def __init__(self):
-        self.n = 10
+        self.n = 20
+        self.traps = 2
+        self.treasures = 3
         self.PADDING_RATIO = 0.05
         self.current_algorithm = "None"
         self.current_cost = 0
         self.current_runtime = 0.0
         self.solution_path = []
+        self.expanded_nodes = 0
         
         # Create figure and main axes
         self.fig = plt.figure(figsize=(12, 10))
@@ -93,7 +96,11 @@ class GridGame:
     def update_title(self):
         runtime_str = f"{self.current_runtime:.4f}s" if self.current_runtime > 0 else "N/A"
         self.fig.suptitle(
-            f"Grid Size: {self.n}x{self.n} | Algorithm: {self.current_algorithm} | Cost: {self.current_cost} | Runtime: {runtime_str}",
+            f"Grid Size: {self.n}x{self.n} " +
+            f"| Algorithm: {self.current_algorithm} " + 
+            f"| Cost: {self.current_cost} " +
+            f"| Runtime: {runtime_str} " +
+            f"| Expanded Nodes: {self.expanded_nodes}",
             fontsize=14, fontweight='bold')
         self.fig.canvas.draw_idle()
 
@@ -187,12 +194,12 @@ class GridGame:
         self.reset_solution_highlight()
         self.set_algorithm(algorithm_name)
         start_time = time.time()
-        self.solution_path, expanded_nodes = algorithm_func(self.grid, self.start, self.end)
+        self.solution_path, self.expanded_nodes = algorithm_func(self.grid, self.start, self.end)
         end_time = time.time()
         self.current_runtime = end_time - start_time
         self.algorithm_updates()
         print(f"Runtime {algorithm_name}: {self.current_runtime:.4f}s")
-        print(f"Nodes Expanded: {expanded_nodes}")
+        print(f"Nodes Expanded: {self.expanded_nodes}")
         print(f"Total Cost: {self.current_cost}")
         
     def do_BFS(self, event=None) -> None:
@@ -209,7 +216,7 @@ class GridGame:
         self.algorithm_helper('A*', A_Star.A_Star)
 
     def do_Greedy_BFS(self, event=None) -> None:
-        self.algorithm_helper('Greedy Best-First Search', Greedy_BFS.Greedy_BFS)
+        self.algorithm_helper('Greedy BFS', Greedy_BFS.Greedy_BFS)
         
     def algorithm_updates(self) -> None:
         self.current_cost = len(self.solution_path) - 1 if self.solution_path else 0
