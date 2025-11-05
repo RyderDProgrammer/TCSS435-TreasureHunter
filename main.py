@@ -261,7 +261,23 @@ class GridGame:
         self.algorithm_helper('Greedy BFS', Greedy_BFS.Greedy_BFS)
         
     def algorithm_updates(self) -> None:
-        self.current_cost = len(self.solution_path) - 1 if self.solution_path else 0
+        # Calculate actual cost based on tile types
+        if self.solution_path:
+            total_cost = 0
+            for i, (row, col) in enumerate(self.solution_path):
+                if i == 0:  # Skip start position
+                    continue
+                tile = self.grid[row][col]
+                if tile in ['S', 'T']:  # Start or Treasure
+                    total_cost += 0
+                elif tile == 'X':  # Trap
+                    total_cost += 5
+                else:  # Regular tile
+                    total_cost += 1
+            self.current_cost = total_cost
+        else:
+            self.current_cost = 0
+
         self.update_title()
         self.highlight_solution_path()
         print(self.solution_path)

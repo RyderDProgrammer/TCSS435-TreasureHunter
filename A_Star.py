@@ -33,7 +33,16 @@ def A_Star(grid, start, end):
             if 0 <= nr < n and 0 <= nc < n:
                 if grid[nr][nc] == '#':  # Obstacle
                     continue
-                new_cost = cost_so_far[current] + 1  # cost of each move is 1
+
+                # Determine step cost based on tile type
+                if grid[nr][nc] in ['S', 'T']:  # Start or Treasure
+                    step_cost = 0
+                elif grid[nr][nc] == 'X':  # Trap
+                    step_cost = 5
+                else:  # Regular empty tile
+                    step_cost = 1
+
+                new_cost = cost_so_far[current] + step_cost
                 if (nr, nc) not in cost_so_far or new_cost < cost_so_far[(nr, nc)]:
                     visited.add((nr, nc))
                     cost_so_far[(nr, nc)] = new_cost
