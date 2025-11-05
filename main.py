@@ -1,5 +1,7 @@
 import random
 import time
+import math
+import numpy
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.widgets import Button
@@ -115,27 +117,39 @@ class GridGame:
         self.ax.axis("off")
 
         grid = [[' ' for _ in range(self.n)] for _ in range(self.n)]
-        treasure = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
-        grid[treasure[0]][treasure[1]] = 'T'
 
-        # record ending position
-        self.end = (treasure[0], treasure[1])
+        # add treasures to an 'end' list
+        self.end = []
+        for i in range(self.treasures):
+            while True:
+                treasure = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
+                if treasure not in self.end:
+                    break
 
+            grid[treasure[0]][treasure[1]] = 'T'
+            self.end.append(treasure)
+        
+        # create starting position
         while True:
             start = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
-            if start != treasure:
+            if start not in self.end:
                 grid[start[0]][start[1]] = 'S'
 
                 # record start position for searching
                 self.start = (start[0], start[1])
                 break
 
-        while True:
-            trap = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
-            if trap != treasure and trap != start:
-                grid[trap[0]][trap[1]] = 'X'
-                self.Trap = trap
-                break
+        # create traps
+        traps = []
+        for i in range(self.traps):
+            while True:
+                trap = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
+                if trap not in self.end and trap != start and trap not in traps:
+                    grid[trap[0]][trap[1]] = 'X'
+                    self.Trap = trap
+                    break
+
+            traps.append(trap)
 
         num_walls = random.randint(int(self.n ** 2 * 0.1), int(self.n ** 2 * 0.15))
         placed = 0
@@ -194,7 +208,35 @@ class GridGame:
         self.reset_solution_highlight()
         self.set_algorithm(algorithm_name)
         start_time = time.time()
-        self.solution_path, self.expanded_nodes = algorithm_func(self.grid, self.start, self.end)
+
+        # self.solution_path, self.expanded_nodes = algorithm_func(self.grid, self.start, self.end)
+
+        # below is a method that I've tried, but I dont think is correct
+        # (im keepign this here for safe measures)
+
+        self.expanded_nodes = 0
+        self.solution_path = []
+
+        # use dictionary and Euclidean distance to find closest treasures
+        dict = {}
+        for t in self.end:
+            dict[t] = math.sqrt((t[0] - self.start[0]) ** 2 + (t[1] - self.start[1]) ** 2)
+
+        # sort values of dictionary
+        keys = list(dict.keys())
+        values = list(dict.values())
+        sorted_value_index = numpy.argsort(values)
+        sorted_dict = {keys[i]: values[i] for i in sorted_value_index} 
+
+        # perform searches
+        start = self.start
+        for t in sorted_dict:
+            path, expanded = algorithm_func(self.grid, start, t)
+            self.expanded_nodes += expanded
+            for c in path:
+                self.solution_path.append(c)
+            start = t
+
         end_time = time.time()
         self.current_runtime = end_time - start_time
         self.algorithm_updates()
