@@ -194,6 +194,10 @@ class GridGame:
                 rect.set_color('purple')
             if(self.grid[i][j] == 'X' and color == 'white'):
                 rect.set_color('red')
+            if self.grid[i][j] == 'T':
+                rect.set_color('green')
+            if self.grid[i][j] == 'S':
+                rect.set_color('blue')
             self.ax.add_patch(rect)
         self.fig.canvas.draw_idle()
     
@@ -202,8 +206,7 @@ class GridGame:
         
     def reset_solution_highlight(self):
         self.solution_path_helper('white')
-        
-    # --- Uninformed searches ---
+
     def algorithm_helper(self, algorithm_name: str, algorithm_func) -> None:
         self.reset_solution_highlight()
         self.set_algorithm(algorithm_name)
@@ -244,6 +247,7 @@ class GridGame:
         print(f"Nodes Expanded: {self.expanded_nodes}")
         print(f"Total Cost: {self.current_cost}")
         
+    # --- Uninformed searches ---
     def do_BFS(self, event=None) -> None:
         self.algorithm_helper('BFS', BFS.BFS)
         
