@@ -2,6 +2,8 @@ def A_Star(grid, start, end):
     n = len(grid)
     directions = [(-1,0), (0,1), (0,-1), (1,0)]  # Up, Right, Left, Down
     expanded_nodes = 0
+    total_heuristic = 0.0
+    heuristic_count = 0
 
     # Manhattan distance heuristic
     def heuristic(pos):
@@ -16,6 +18,8 @@ def A_Star(grid, start, end):
         pq.sort()  # smallest f_cost comes first
         current_f, current = pq.pop(0)
         expanded_nodes += 1
+        total_heuristic += heuristic(current)
+        heuristic_count += 1
 
         # Check if we've reached the goal
         if current == end:
@@ -25,7 +29,8 @@ def A_Star(grid, start, end):
                 path.append(current)
                 current = parent[current]
             path.reverse()
-            return path, expanded_nodes
+            avg_heuristic = total_heuristic / heuristic_count if heuristic_count > 0 else 0.0
+            return path, expanded_nodes, avg_heuristic
         
         r, c = current
         for dr, dc in directions:
@@ -50,4 +55,5 @@ def A_Star(grid, start, end):
                     f_cost = new_cost + heuristic((nr, nc))  # f = g + h
                     pq.append((f_cost, (nr, nc)))
 
-    return None, expanded_nodes  # No path found
+    avg_heuristic = total_heuristic / heuristic_count if heuristic_count > 0 else 0.0
+    return None, expanded_nodes, avg_heuristic  # No path found

@@ -20,6 +20,7 @@ class GridGame:
         self.current_runtime = 0.0
         self.solution_path = []
         self.expanded_nodes = 0
+        self.heuristic_value = None
 
         # Create figure and main axes
         self.fig = plt.figure(figsize=(12, 10))
@@ -98,12 +99,14 @@ class GridGame:
 
     def update_title(self):
         runtime_str = f"{self.current_runtime:.4f}s" if self.current_runtime > 0 else "N/A"
+        heuristic_str = f"{self.heuristic_value:.2f}" if self.heuristic_value is not None else "N/A"
         self.fig.suptitle(
             f"Grid Size: {self.n}x{self.n} " +
             f"| Algorithm: {self.current_algorithm} " +
             f"| Cost: {self.current_cost} " +
             f"| Runtime: {runtime_str} " +
-            f"| Expanded Nodes: {self.expanded_nodes}",
+            f"| Expanded Nodes: {self.expanded_nodes} " +
+            f"| Heuristic Value: {heuristic_str}",
             fontsize=14, fontweight='bold')
         self.fig.canvas.draw_idle()
 
@@ -218,6 +221,7 @@ class GridGame:
 
         self.expanded_nodes = 0
         self.solution_path = []
+        self.heuristic_value = None
 
         # use dictionary and Euclidean distance to find closest treasures
         dict = {}
@@ -232,8 +236,14 @@ class GridGame:
 
         # perform searches
         start = self.start
+        total_heuristic = 0
+        heuristic_count = 0
         for t in sorted_dict:
-            path, expanded = algorithm_func(self.grid, start, t)
+            result = algorithm_func(self.grid, start, t)
+            path, expanded, *heuristic = result
+            if heuristic:
+                total_heuristic += heuristic[0]
+                heuristic_count += 1
             self.expanded_nodes += expanded
 
             #skip first element of sub paths to avoid duplicates
@@ -245,6 +255,9 @@ class GridGame:
                     self.solution_path.append(c)
 
             start = t
+
+        if heuristic_count > 0:
+            self.heuristic_value = total_heuristic / heuristic_count
 
         end_time = time.time()
         self.current_runtime = end_time - start_time

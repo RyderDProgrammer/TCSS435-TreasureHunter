@@ -2,6 +2,8 @@ def Greedy_BFS(grid, start, end):
     n = len(grid)
     directions = [(-1, 0), (0, 1), (0, -1), (1, 0)]
     expanded_nodes = 0
+    total_heuristic = 0.0
+    heuristic_count = 0
 
     # manhattan distance heuristic
     def heuristic(pos):
@@ -16,6 +18,8 @@ def Greedy_BFS(grid, start, end):
         pq.sort()  # smallest h_cost is first
         current_h, current = pq.pop(0)
         expanded_nodes += 1
+        total_heuristic += heuristic(current)
+        heuristic_count += 1
 
         # check the goal if reached
         if current == end:
@@ -25,7 +29,8 @@ def Greedy_BFS(grid, start, end):
                 path.append(current)
                 current = parent[current]
             path.reverse()
-            return path, expanded_nodes
+            avg_heuristic = total_heuristic / heuristic_count if heuristic_count > 0 else 0.0
+            return path, expanded_nodes, avg_heuristic
 
         r, c = current
         for dr, dc in directions:
@@ -49,5 +54,6 @@ def Greedy_BFS(grid, start, end):
                     h_cost = heuristic((nr, nc))  # Only heuristic, no g cost
                     pq.append((h_cost, (nr, nc)))
 
-    return None, expanded_nodes  # No path found
+    avg_heuristic = total_heuristic / heuristic_count if heuristic_count > 0 else 0.0
+    return None, expanded_nodes, avg_heuristic  # No path found
 
