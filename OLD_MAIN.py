@@ -5,6 +5,7 @@ import numpy
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.widgets import Button
+from Algorithms import BFS, DFS, UCS, A_Star, Greedy_BFS, MiniMax, Alpha_Beta
 
 class GridGame:
     def __init__(self):
