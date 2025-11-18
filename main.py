@@ -10,14 +10,18 @@ class TreasureHunterGame:
         self.algorithm_runner = AlgorithmRunner(self.grid)
         self.game_mode = SinglePlayerMode(self.grid, self.gui, self.algorithm_runner)
 
-        # Setup GUI buttons with callbacks
-        self._setup_callbacks()
-
-        # Generate initial grid
-        self.create_grid()
+        # Show mode selection dialog first
+        self.gui.show_mode_selection(self.on_mode_selected)
 
         # Start the game
         self.gui.show()
+
+    def on_mode_selected(self):
+        # Setup GUI buttons with callbacks after mode is selected
+        self._setup_callbacks()
+
+        # Generate initial grid after mode is selected
+        self.create_grid()
 
     def _setup_callbacks(self):
         callbacks = {
@@ -38,6 +42,7 @@ class TreasureHunterGame:
         self.grid.generate_grid()
         self.algorithm_runner.reset()
         self.gui.n = self.grid.n
+        self.gui.algorithm_executed = False
         self.gui.render_grid(self.grid.grid)
         self.gui.update_title(self.algorithm_runner.get_current_state())
 
@@ -53,39 +58,36 @@ class TreasureHunterGame:
     # Algorithm execution methods
     def do_BFS(self, event=None):
         result = self.algorithm_runner.run_algorithm('BFS', BFS.BFS)
-        self.gui.render_grid(self.grid.grid, result['path'])
-        self.gui.update_title(result)
+        self.algorithm_helper(result)
 
     def do_DFS(self, event=None):
         result = self.algorithm_runner.run_algorithm('DFS', DFS.DFS)
-        self.gui.render_grid(self.grid.grid, result['path'])
-        self.gui.update_title(result)
+        self.algorithm_helper(result)
 
     def do_UCS(self, event=None):
         result = self.algorithm_runner.run_algorithm('UCS', UCS.UCS)
-        self.gui.render_grid(self.grid.grid, result['path'])
-        self.gui.update_title(result)
+        self.algorithm_helper(result)
 
     def do_A_Star(self, event=None):
         result = self.algorithm_runner.run_algorithm('A*', A_Star.A_Star)
-        self.gui.render_grid(self.grid.grid, result['path'])
-        self.gui.update_title(result)
+        self.algorithm_helper(result)
 
     def do_Greedy_BFS(self, event=None):
         result = self.algorithm_runner.run_algorithm('Greedy BFS', Greedy_BFS.Greedy_BFS)
-        self.gui.render_grid(self.grid.grid, result['path'])
-        self.gui.update_title(result)
+        self.algorithm_helper(result)
 
     def do_MiniMax(self, event=None):
         result = self.algorithm_runner.run_algorithm('MiniMax', MiniMax.MiniMax)
-        self.gui.render_grid(self.grid.grid, result['path'])
-        self.gui.update_title(result)
+        self.algorithm_helper(result)
 
     def do_Alpha_Beta(self, event=None):
         result = self.algorithm_runner.run_algorithm('Alpha-Beta', Alpha_Beta.Alpha_Beta)
+        self.algorithm_helper(result)
+        
+    def algorithm_helper(self, result):
+        self.gui.mark_algorithm_executed()
         self.gui.render_grid(self.grid.grid, result['path'])
         self.gui.update_title(result)
-
 
 if __name__ == "__main__":
     TreasureHunterGame()

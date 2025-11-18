@@ -5,6 +5,7 @@ from . import A_Star
 from . import Greedy_BFS
 from . import MiniMax
 from . import Alpha_Beta
+from . import Human
 
 __all__ = [
     'BFS',
@@ -13,5 +14,6 @@ __all__ = [
     'A_Star',
     'Greedy_BFS',
     'MiniMax',
-    'Alpha_Beta'
+    'Alpha_Beta',
+    'Human'
 ]

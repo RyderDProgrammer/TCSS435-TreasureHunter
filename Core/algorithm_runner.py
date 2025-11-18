@@ -44,6 +44,10 @@ class AlgorithmRunner:
             result = algorithm_func(self.grid.grid, start, treasure)
             path, expanded, *heuristic = result
 
+            if path is None:
+                print(f"Unreachable Treasure")
+                continue
+
             if heuristic:
                 total_heuristic += heuristic[0]
                 heuristic_count += 1
