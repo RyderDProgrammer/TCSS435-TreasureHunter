@@ -42,7 +42,7 @@ class TreasureHunterGame:
         self.grid.generate_grid()
         self.algorithm_runner.reset()
         self.gui.n = self.grid.n
-        self.gui.algorithm_executed = False
+        self.gui.reset_for_new_grid()
         self.gui.render_grid(self.grid.grid)
         self.gui.update_title(self.algorithm_runner.get_current_state())
 

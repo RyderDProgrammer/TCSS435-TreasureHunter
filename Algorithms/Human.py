@@ -2,6 +2,7 @@ class HumanPlayer:
     def __init__(self, grid_size):
         self.n = grid_size
         self.revealed_tiles = set()
+        self.stepped_on_tiles = set()  # Tiles the player has actually stepped on
         self.current_path = []
         self.current_grid = None
         self.all_treasures_found = False
@@ -10,6 +11,7 @@ class HumanPlayer:
     def reset(self):
         self.all_treasures_found = False
         self.revealed_tiles.clear()
+        self.stepped_on_tiles.clear()
         self.human_cost = 0
         self.current_path = []
 
@@ -22,6 +24,7 @@ class HumanPlayer:
         for i in range(self.n):
             for j in range(self.n):
                 if grid[i][j] == 'S':
+                    self.stepped_on_tiles.add((i, j))
                     self._reveal_adjacent_tiles(i, j)
                     break
 
@@ -42,6 +45,7 @@ class HumanPlayer:
             self.revealed_tiles.add((row, col))
             if (row, col) not in self.current_path and self.current_grid[row][col] != '#':
                 self.current_path.append((row, col))
+                self.stepped_on_tiles.add((row, col))  # Mark this tile as stepped on
                 self._calculate_human_cost(row, col)
                 self._reveal_adjacent_tiles(row, col)
 
@@ -74,7 +78,7 @@ class HumanPlayer:
         for i in range(self.n):
             for j in range(self.n):
                 if self.current_grid[i][j] == 'T':
-                    if (i, j) not in self.revealed_tiles:
+                    if (i, j) not in self.stepped_on_tiles:
                         return
 
         self.all_treasures_found = True

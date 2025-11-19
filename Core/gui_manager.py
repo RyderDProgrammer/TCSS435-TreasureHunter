@@ -179,6 +179,19 @@ class GUIManager:
     def mark_algorithm_executed(self):
         self.algorithm_executed = True
 
+    def reset_for_new_grid(self):
+        """Reset all paths and fog of war when creating a new grid"""
+        self.algorithm_executed = False
+        self.ai_solution_path = []
+        self.ai_full_path = []
+        self.ai_step_index = 0
+        self.human_player.reset()
+        if self.fog_of_war:
+            # Re-reveal initial tiles for human mode
+            if self.current_grid:
+                self.human_player.set_grid(self.current_grid)
+                self.human_player.reveal_initial_tiles(self.current_grid)
+
     def _get_tile_appearance(self, val, i, j, human_path, ai_path):
         is_on_ai_path = ai_path and (i, j) in ai_path
         is_on_human_path = human_path and (i, j) in human_path
@@ -188,9 +201,15 @@ class GUIManager:
                 return val, '#3544CA', 'white' if val in ['T', 'X', '#'] else 'black'
             return '?', 'lightgray', 'black'
 
-        display_val = val
-        color = {'T': 'gold', 'X': 'red', '#': 'gray', 'S': 'blue'}.get(val, 'white')
-        fg = 'white' if val in ['T', 'X', '#'] else 'black'
+        # Hide traps until the player steps on them (fog of war mode only)
+        if self.fog_of_war and val == 'X' and (i, j) not in self.human_player.stepped_on_tiles:
+            display_val = ' '
+            color = 'white'
+            fg = 'black'
+        else:
+            display_val = val
+            color = {'T': 'gold', 'X': 'red', '#': 'gray', 'S': 'blue'}.get(val, 'white')
+            fg = 'white' if val in ['T', 'X', '#'] else 'black'
 
         if is_on_human_path and is_on_ai_path:
             color = self._get_mixed_path_color(val)
