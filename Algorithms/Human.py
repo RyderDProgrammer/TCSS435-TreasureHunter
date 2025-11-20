@@ -5,6 +5,7 @@ class HumanPlayer:
         self.stepped_on_tiles = set()  # Tiles the player has actually stepped on
         self.current_path = []
         self.current_grid = None
+        self.grid_instance = None  # Store grid instance to access start2
         self.all_treasures_found = False
         self.human_cost = 0
 
@@ -15,18 +16,30 @@ class HumanPlayer:
         self.human_cost = 0
         self.current_path = []
 
-    def set_grid(self, grid):
+    def set_grid(self, grid, grid_instance=None):
         self.current_grid = grid
+        if grid_instance:
+            self.grid_instance = grid_instance
         if grid is not None:
             self.n = len(grid)
 
-    def reveal_initial_tiles(self, grid):
-        for i in range(self.n):
-            for j in range(self.n):
-                if grid[i][j] == 'S':
-                    self.stepped_on_tiles.add((i, j))
-                    self._reveal_adjacent_tiles(i, j)
-                    break
+    def reveal_initial_tiles(self, grid, grid_instance=None):
+        if grid_instance:
+            self.grid_instance = grid_instance
+
+        if self.grid_instance and self.grid_instance.start2:
+            # Use start2 position from grid instance
+            start_pos = self.grid_instance.start2
+            self.stepped_on_tiles.add(start_pos)
+            self._reveal_adjacent_tiles(start_pos[0], start_pos[1])
+        else:
+            # Fallback: find first 'S' tile
+            for i in range(self.n):
+                for j in range(self.n):
+                    if grid[i][j] == 'S':
+                        self.stepped_on_tiles.add((i, j))
+                        self._reveal_adjacent_tiles(i, j)
+                        break
 
     def handle_tile_click(self, row, col):
         if self.all_treasures_found:
@@ -56,7 +69,7 @@ class HumanPlayer:
 
     def _calculate_human_cost(self, row, col):
         tile = self.current_grid[row][col]
-        if tile in ['S', 'T']:
+        if tile in ['S', 'T']:  # Starting positions and treasures have no cost
             cost = 0
         elif tile == 'X':
             cost = 5
@@ -89,7 +102,11 @@ class HumanPlayer:
 
         path_to_check = list(self.current_path) if self.current_path else []
 
-        if self.current_grid:
+        # Add start2 position to path
+        if self.grid_instance and self.grid_instance.start2:
+            path_to_check.append(self.grid_instance.start2)
+        elif self.current_grid:
+            # Fallback: find first 'S' tile
             for i in range(self.n):
                 for j in range(self.n):
                     if self.current_grid[i][j] == 'S':

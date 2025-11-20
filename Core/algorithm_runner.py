@@ -20,12 +20,15 @@ class AlgorithmRunner:
         self.heuristic_value = None
         self.current_algorithm = algorithm_name
 
+        # Use start1 for AI/Player 1
+        ai_start = self.grid.start1 if hasattr(self.grid, 'start1') and self.grid.start1 else self.grid.start
+
         # Use dictionary and Euclidean distance to find closest treasures
         treasure_distances = {}
         for treasure in self.grid.end:
             distance = math.sqrt(
-                (treasure[0] - self.grid.start[0]) ** 2 +
-                (treasure[1] - self.grid.start[1]) ** 2
+                (treasure[0] - ai_start[0]) ** 2 +
+                (treasure[1] - ai_start[1]) ** 2
             )
             treasure_distances[treasure] = distance
 
@@ -36,7 +39,7 @@ class AlgorithmRunner:
         sorted_treasures = {keys[i]: values[i] for i in sorted_indices}
 
         # Perform searches to each treasure in order
-        start = self.grid.start
+        start = ai_start
         total_heuristic = 0
         heuristic_count = 0
 
@@ -97,7 +100,7 @@ class AlgorithmRunner:
                 continue
 
             tile = self.grid.grid[row][col]
-            if tile in ['S', 'T']:  # Start or Treasure
+            if tile in ['S', 'T']:  # Starting positions or Treasure
                 total_cost += 0
             elif tile == 'X':  # Trap
                 total_cost += 5

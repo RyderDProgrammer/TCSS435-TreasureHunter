@@ -43,8 +43,9 @@ class TreasureHunterGame:
         self.algorithm_runner.reset()
         self.gui.n = self.grid.n
         self.gui.reset_for_new_grid()
-        self.gui.render_grid(self.grid.grid)
+        self.gui.render_grid(self.grid.grid, grid_instance=self.grid)
         self.gui.update_title(self.algorithm_runner.get_current_state())
+        self.human_mode_first_algorithm = True  # Reset flag when creating new grid
 
     def increase_size(self, event):
         self.grid.n += 1
@@ -57,36 +58,34 @@ class TreasureHunterGame:
 
     # Algorithm execution methods
     def do_BFS(self, event=None):
-        result = self.algorithm_runner.run_algorithm('BFS', BFS.BFS)
-        self.algorithm_helper(result)
+        self.algorithm_helper('BFS', BFS.BFS)
 
     def do_DFS(self, event=None):
-        result = self.algorithm_runner.run_algorithm('DFS', DFS.DFS)
-        self.algorithm_helper(result)
+        self.algorithm_helper('DFS', DFS.DFS)
 
     def do_UCS(self, event=None):
-        result = self.algorithm_runner.run_algorithm('UCS', UCS.UCS)
-        self.algorithm_helper(result)
+        self.algorithm_helper('UCS', UCS.UCS)
 
     def do_A_Star(self, event=None):
-        result = self.algorithm_runner.run_algorithm('A*', A_Star.A_Star)
-        self.algorithm_helper(result)
+        self.algorithm_helper('A*', A_Star.A_Star)
 
     def do_Greedy_BFS(self, event=None):
-        result = self.algorithm_runner.run_algorithm('Greedy BFS', Greedy_BFS.Greedy_BFS)
-        self.algorithm_helper(result)
+        self.algorithm_helper('Greedy BFS', Greedy_BFS.Greedy_BFS)
 
     def do_MiniMax(self, event=None):
-        result = self.algorithm_runner.run_algorithm('MiniMax', MiniMax.MiniMax)
-        self.algorithm_helper(result)
+        self.algorithm_helper('MiniMax', MiniMax.MiniMax)
 
     def do_Alpha_Beta(self, event=None):
-        result = self.algorithm_runner.run_algorithm('Alpha-Beta', Alpha_Beta.Alpha_Beta)
-        self.algorithm_helper(result)
-        
-    def algorithm_helper(self, result):
+        self.algorithm_helper('Alpha-Beta', Alpha_Beta.Alpha_Beta)
+
+    def algorithm_helper(self, algorithm_name, algorithm_func):
+        if self.gui.player_mode == 'human' and self.gui.algorithm_executed:
+            # Reset AI and fog of war, but keep the same grid
+            self.algorithm_runner.reset()
+            self.gui.reset_for_new_grid()
+        result = self.algorithm_runner.run_algorithm(algorithm_name, algorithm_func)
         self.gui.mark_algorithm_executed()
-        self.gui.render_grid(self.grid.grid, result['path'])
+        self.gui.render_grid(self.grid.grid, result['path'], grid_instance=self.grid)
         self.gui.update_title(result)
 
 if __name__ == "__main__":

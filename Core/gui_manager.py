@@ -16,6 +16,7 @@ class GUIManager:
         self.ai_solution_path = []
         self.ai_full_path = []
         self.ai_step_index = 0
+        self.grid_instance = None  # Store grid instance to access start1/start2 positions
 
         # Create figure and main axes
         self.fig = plt.figure(figsize=(12, 10))
@@ -137,17 +138,19 @@ class GUIManager:
         if solution_path is None or len(solution_path) == 0:
             if len(self.human_player.current_path) == 0:
                 self.human_player.reset()
-                self.human_player.set_grid(grid)
+                self.human_player.set_grid(grid, self.grid_instance)
 
                 if self.fog_of_war:
-                    self.human_player.reveal_initial_tiles(grid)
+                    self.human_player.reveal_initial_tiles(grid, self.grid_instance)
             else:
-                self.human_player.set_grid(grid)
+                self.human_player.set_grid(grid, self.grid_instance)
         else:
-            self.human_player.set_grid(grid)
+            self.human_player.set_grid(grid, self.grid_instance)
 
-    def render_grid(self, grid, solution_path=None):
+    def render_grid(self, grid, solution_path=None, grid_instance=None):
         self.current_grid = grid
+        if grid_instance:
+            self.grid_instance = grid_instance
         self._update_ai_path_state(solution_path)
         self._update_human_player_state(grid, solution_path)
         self._clear_and_setup_axes()
@@ -189,16 +192,21 @@ class GUIManager:
         if self.fog_of_war:
             # Re-reveal initial tiles for human mode
             if self.current_grid:
-                self.human_player.set_grid(self.current_grid)
-                self.human_player.reveal_initial_tiles(self.current_grid)
+                self.human_player.set_grid(self.current_grid, self.grid_instance)
+                self.human_player.reveal_initial_tiles(self.current_grid, self.grid_instance)
 
     def _get_tile_appearance(self, val, i, j, human_path, ai_path):
         is_on_ai_path = ai_path and (i, j) in ai_path
         is_on_human_path = human_path and (i, j) in human_path
 
-        if self.fog_of_war and val not in ['S'] and (i, j) not in self.human_player.revealed_tiles:
+        # Check if this is start1 or start2
+        is_start1 = self.grid_instance and (i, j) == self.grid_instance.start1
+        is_start2 = self.grid_instance and (i, j) == self.grid_instance.start2
+
+        # Fog of war: hide unrevealed tiles (except start1 and start2 which are always visible)
+        if self.fog_of_war and not is_start1 and not is_start2 and (i, j) not in self.human_player.revealed_tiles:
             if is_on_ai_path:
-                return val, '#3544CA', 'white' if val in ['T', 'X', '#'] else 'black'
+                return val, '#3544CA', 'white' if val in ['T', 'X', '#', 'S'] else 'black'
             return '?', 'lightgray', 'black'
 
         # Hide traps until the player steps on them (fog of war mode only)
@@ -208,35 +216,65 @@ class GUIManager:
             fg = 'black'
         else:
             display_val = val
-            color = {'T': 'gold', 'X': 'red', '#': 'gray', 'S': 'blue'}.get(val, 'white')
-            fg = 'white' if val in ['T', 'X', '#'] else 'black'
+            # Default colors
+            if val == 'S':
+                if is_start1:
+                    color = '#3544CA'  # Dark blue for Start 1 (AI/Player 1)
+                    fg = 'white'
+                elif is_start2:
+                    color = 'lightblue'  # Light blue for Start 2 (Human/Player 2)
+                    fg = 'black'
+                else:
+                    color = 'blue'
+                    fg = 'white'
+            else:
+                color = {'T': 'gold', 'X': 'red', '#': 'gray'}.get(val, 'white')
+                fg = 'white' if val in ['T', 'X', '#'] else 'black'
 
         if is_on_human_path and is_on_ai_path:
-            color = self._get_mixed_path_color(val)
+            color = self._get_mixed_path_color(val, is_start1, is_start2, (i, j))
         elif is_on_human_path:
-            color = self._get_path_color(val, is_human=True)
+            color = self._get_path_color(val, is_human=True, is_start1=is_start1, is_start2=is_start2, pos=(i, j))
         elif is_on_ai_path:
-            color = self._get_path_color(val, is_human=False)
+            color = self._get_path_color(val, is_human=False, is_start1=is_start1, is_start2=is_start2, pos=(i, j))
 
         return display_val, color, fg
 
-    def _get_mixed_path_color(self, tile_val):
+    def _get_mixed_path_color(self, tile_val, is_start1=False, is_start2=False, pos=None):
+        # For traps in fog of war, only show cyan if stepped on
         if tile_val == 'X':
+            if self.fog_of_war and pos and pos not in self.human_player.stepped_on_tiles:
+                return 'lightblue'  # Human path color, hide trap color
             return 'cyan'
         elif tile_val == 'T':
             return 'green'
+        elif tile_val == 'S':
+            if is_start1:
+                return '#3544CA'
+            elif is_start2:
+                return 'lightblue'
+            return '#5B6FC9'
         elif tile_val not in ['S']:
             return '#5B6FC9'
         return 'blue'
 
-    def _get_path_color(self, tile_val, is_human=False):
+    def _get_path_color(self, tile_val, is_human=False, is_start1=False, is_start2=False, pos=None):
+        # For traps in fog of war, only show special color if stepped on
         if tile_val == 'X':
+            if self.fog_of_war and is_human and pos and pos not in self.human_player.stepped_on_tiles:
+                return 'lightblue'  # Human path color, hide trap color
             return 'cyan'
         elif tile_val == 'T':
             if is_human:
                 return 'green'
             else:
                 return '#3544CA'
+        elif tile_val == 'S':
+            if is_start1:
+                return '#3544CA'
+            elif is_start2:
+                return 'lightblue'
+            return 'blue'
         elif tile_val not in ['S']:
             if is_human:
                 return 'lightblue'

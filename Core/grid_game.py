@@ -5,6 +5,8 @@ class Grid:
         self.n = n
         self.grid = []
         self.start = None
+        self.start1 = None  # Player 1 starting position (AI or first player)
+        self.start2 = None  # Player 2 starting position (Human or second player)
         self.end = []  # List of treasure positions
         self.traps = []
         self.walls = []
@@ -29,19 +31,28 @@ class Grid:
             self.grid[treasure[0]][treasure[1]] = 'T'
             self.end.append(treasure)
 
-        # Create starting position
+        # Create Start 1 position (Player 1 / AI)
         while True:
-            start = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
-            if start not in self.end:
-                self.grid[start[0]][start[1]] = 'S'
-                self.start = (start[0], start[1])
+            start1 = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
+            if start1 not in self.end:
+                self.grid[start1[0]][start1[1]] = 'S'
+                self.start1 = (start1[0], start1[1])
+                self.start = self.start1
+                break
+
+        # Create Start 2 position (Player 2 / Human)
+        while True:
+            start2 = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
+            if start2 not in self.end and start2 != self.start1:
+                self.grid[start2[0]][start2[1]] = 'S'
+                self.start2 = (start2[0], start2[1])
                 break
 
         # Create traps
         for i in range(num_traps):
             while True:
                 trap = (random.randint(0, self.n - 1), random.randint(0, self.n - 1))
-                if trap not in self.end and trap != self.start and trap not in self.traps:
+                if trap not in self.end and trap != self.start1 and trap != self.start2 and trap not in self.traps:
                     self.grid[trap[0]][trap[1]] = 'X'
                     self.traps.append(trap)
                     break
