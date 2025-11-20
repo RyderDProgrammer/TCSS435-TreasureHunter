@@ -9,7 +9,6 @@ class GUIManager:
         self.n = grid_size
         self.fog_of_war = False  # For human mode
         self.player_mode = None  # Will be set by mode selection
-        self.mode_selected = False
         self.human_player = HumanPlayer(grid_size)
         self.current_grid = None
         self.algorithm_executed = False
@@ -141,7 +140,7 @@ class GUIManager:
                 self.human_player.set_grid(grid, self.grid_instance)
 
                 if self.fog_of_war:
-                    self.human_player.reveal_initial_tiles(grid, self.grid_instance)
+                    self.human_player.reveal_initial_tiles(self.grid_instance)
             else:
                 self.human_player.set_grid(grid, self.grid_instance)
         else:
@@ -183,7 +182,6 @@ class GUIManager:
         self.algorithm_executed = True
 
     def reset_for_new_grid(self):
-        """Reset all paths and fog of war when creating a new grid"""
         self.algorithm_executed = False
         self.ai_solution_path = []
         self.ai_full_path = []
@@ -193,7 +191,7 @@ class GUIManager:
             # Re-reveal initial tiles for human mode
             if self.current_grid:
                 self.human_player.set_grid(self.current_grid, self.grid_instance)
-                self.human_player.reveal_initial_tiles(self.current_grid, self.grid_instance)
+                self.human_player.reveal_initial_tiles(self.grid_instance)
 
     def _get_tile_appearance(self, val, i, j, human_path, ai_path):
         is_on_ai_path = ai_path and (i, j) in ai_path
@@ -334,7 +332,6 @@ class GUIManager:
         def human_or_ai(player_mode, fog_of_war):
             self.player_mode = player_mode
             self.fog_of_war = fog_of_war
-            self.mode_selected = True
             # Disconnect button events before removing
             self.btn_human.disconnect_events()
             self.btn_ai.disconnect_events()

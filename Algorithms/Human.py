@@ -23,23 +23,14 @@ class HumanPlayer:
         if grid is not None:
             self.n = len(grid)
 
-    def reveal_initial_tiles(self, grid, grid_instance=None):
+    def reveal_initial_tiles(self, grid_instance=None):
         if grid_instance:
             self.grid_instance = grid_instance
 
-        if self.grid_instance and self.grid_instance.start2:
-            # Use start2 position from grid instance
-            start_pos = self.grid_instance.start2
+        start_pos = self._get_start_position()
+        if start_pos:
             self.stepped_on_tiles.add(start_pos)
             self._reveal_adjacent_tiles(start_pos[0], start_pos[1])
-        else:
-            # Fallback: find first 'S' tile
-            for i in range(self.n):
-                for j in range(self.n):
-                    if grid[i][j] == 'S':
-                        self.stepped_on_tiles.add((i, j))
-                        self._reveal_adjacent_tiles(i, j)
-                        break
 
     def handle_tile_click(self, row, col):
         if self.all_treasures_found:
@@ -96,22 +87,27 @@ class HumanPlayer:
 
         self.all_treasures_found = True
 
+    def _get_start_position(self):
+        if self.grid_instance and self.grid_instance.start2:
+            return self.grid_instance.start2
+        elif self.current_grid:
+            # Fallback: find first 'S' tile
+            for i in range(self.n):
+                for j in range(self.n):
+                    if self.current_grid[i][j] == 'S':
+                        return (i, j)
+        return None
+
     def _is_adjacent_to_path(self, row, col):
         if not self.current_path and not self.current_grid:
             return False
 
         path_to_check = list(self.current_path) if self.current_path else []
 
-        # Add start2 position to path
-        if self.grid_instance and self.grid_instance.start2:
-            path_to_check.append(self.grid_instance.start2)
-        elif self.current_grid:
-            # Fallback: find first 'S' tile
-            for i in range(self.n):
-                for j in range(self.n):
-                    if self.current_grid[i][j] == 'S':
-                        path_to_check.append((i, j))
-                        break
+        # Add start position to path
+        start_pos = self._get_start_position()
+        if start_pos:
+            path_to_check.append(start_pos)
 
         if (row, col) in path_to_check:
             return True

@@ -1,4 +1,4 @@
-from Core import Grid, GUIManager, AlgorithmRunner, SinglePlayerMode
+from Core import Grid, GUIManager, AlgorithmRunner
 from Algorithms import BFS, DFS, UCS, A_Star, Greedy_BFS, MiniMax, Alpha_Beta
 
 
@@ -8,7 +8,6 @@ class TreasureHunterGame:
         self.grid = Grid(n=15)
         self.gui = GUIManager(grid_size=15)
         self.algorithm_runner = AlgorithmRunner(self.grid)
-        self.game_mode = SinglePlayerMode(self.grid, self.gui, self.algorithm_runner)
 
         # Show mode selection dialog first
         self.gui.show_mode_selection(self.on_mode_selected)
@@ -45,7 +44,6 @@ class TreasureHunterGame:
         self.gui.reset_for_new_grid()
         self.gui.render_grid(self.grid.grid, grid_instance=self.grid)
         self.gui.update_title(self.algorithm_runner.get_current_state())
-        self.human_mode_first_algorithm = True  # Reset flag when creating new grid
 
     def increase_size(self, event):
         self.grid.n += 1
