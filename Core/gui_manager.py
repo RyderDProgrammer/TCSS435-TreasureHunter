@@ -2,6 +2,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.widgets import Button
 from Algorithms.Human import HumanPlayer
+from Core.path_walking import PathWalking
+from Core.tile_renderer import TileRenderer
+from Core.title_formatter import TitleFormatter
+from Core.mode_selector import ModeSelector
 
 
 class GUIManager:
@@ -15,8 +19,12 @@ class GUIManager:
         self.ai_solution_path = []
         self.ai_full_path = []
         self.ai_step_index = 0
-        self.grid_instance = None  # Store grid instance to access start1/start2 positions
-        self.last_ai_info = None  # Store last AI algorithm info for title display
+        self.ai_solution_path_p2 = []  # Player 2 AI path
+        self.ai_full_path_p2 = []
+        self.ai_step_index_p2 = 0
+        self.grid_instance = None
+        self.last_ai_info = None
+        self.path_walking = PathWalking(self)
 
         # Create figure and main axes
         self.fig = plt.figure(figsize=(12, 10))
@@ -102,7 +110,10 @@ class GUIManager:
         for i in range(self.n):
             for j in range(self.n):
                 val = self.current_grid[i][j]
-                display_val, color, fg = self._get_tile_appearance(val, i, j, self.human_player.current_path, self.ai_solution_path)
+                display_val, color, fg = TileRenderer.get_tile_appearance(
+                    val, i, j, self.grid_instance, self.fog_of_war,
+                    self.human_player, self.ai_solution_path, self.ai_solution_path_p2
+                )
 
                 rect = patches.Rectangle((j, self.n - i - 1), 1, 1,
                                         facecolor=color, edgecolor='black', linewidth=1.3)
@@ -123,16 +134,33 @@ class GUIManager:
         self._draw_grid_tiles()
         self.fig.canvas.draw_idle()
 
-    def _update_ai_path_state(self, solution_path):
+    def _update_ai_path_state(self, solution_path, solution_path_p2=None):
         if solution_path is not None and len(solution_path) > 0:
             self.ai_full_path = solution_path
-            self.ai_step_index = 1
             if self.fog_of_war:
+                self.ai_step_index = 1
                 self.ai_solution_path = solution_path[:2] if len(solution_path) > 1 else solution_path
+            elif self.player_mode == 'ai':
+                # AI vs AI mode: start with empty paths, animation will fill them
+                self.ai_step_index = -1
+                self.ai_solution_path = []
             else:
+                self.ai_step_index = 1
                 self.ai_solution_path = solution_path
         elif not solution_path:
             self.ai_solution_path = []
+
+        # Handle Player 2 path (AI vs AI mode)
+        if solution_path_p2 is not None and len(solution_path_p2) > 0:
+            self.ai_full_path_p2 = solution_path_p2
+            # AI vs AI mode: start with empty path, animation will fill it
+            self.ai_step_index_p2 = -1
+            self.ai_solution_path_p2 = []
+        elif solution_path_p2 is not None:
+            self.ai_solution_path_p2 = []
+
+        if self.player_mode == 'ai' and solution_path_p2 is not None:
+            self.path_walking.start()
 
     def _update_human_player_state(self, grid, solution_path):
         if solution_path is None or len(solution_path) == 0:
@@ -147,55 +175,25 @@ class GUIManager:
         else:
             self.human_player.set_grid(grid, self.grid_instance)
 
-    def render_grid(self, grid, solution_path=None, grid_instance=None):
+    def render_grid(self, grid, solution_path=None, grid_instance=None, solution_path_p2=None):
         self.current_grid = grid
         if grid_instance:
             self.grid_instance = grid_instance
-        self._update_ai_path_state(solution_path)
+        self._update_ai_path_state(solution_path, solution_path_p2)
         self._update_human_player_state(grid, solution_path)
-        self._clear_and_setup_axes()
-        self._draw_grid_tiles()
-        self.fig.canvas.draw_idle()
+        # Skip initial draw in AI vs AI mode - animation will handle it
+        if not (self.player_mode == 'ai' and solution_path_p2 is not None):
+            self._clear_and_setup_axes()
+            self._draw_grid_tiles()
+            self.fig.canvas.draw_idle()
 
     def update_title(self, info, player2_info=None):
-        # Store AI info if this is an AI algorithm result
         if info.get('algorithm') not in ['Human', 'None']:
             self.last_ai_info = info
 
-        # Use stored AI info if available, otherwise use passed info
         ai_info = self.last_ai_info if self.last_ai_info else info
-
-        runtime_str = f"{ai_info.get('runtime', 0):.4f}s" if ai_info.get('runtime', 0) > 0 else "N/A"
-        heuristic_str = f"{ai_info.get('heuristic'):.2f}" if ai_info.get('heuristic') is not None else "N/A"
-
-        # Player 1 stats
-        player1_title = (
-            f"Player 1 (AI) - Algorithm: {ai_info.get('algorithm', 'None')} | "
-            f"Cost: {ai_info.get('cost', 0)} | "
-            f"Runtime: {runtime_str} | "
-            f"Expanded Nodes: {ai_info.get('expanded_nodes', 0)} | "
-            f"Heuristic: {heuristic_str}"
-        )
-
-        # Player 2 stats
-        if self.player_mode == 'human':
-            player2_title = f"Player 2 (Human) - Cost: {self.human_player.human_cost}"
-        elif self.player_mode == 'ai' and player2_info:
-            # AI vs AI mode with Player 2 stats
-            p2_runtime_str = f"{player2_info.get('runtime', 0):.4f}s" if player2_info.get('runtime', 0) > 0 else "N/A"
-            p2_heuristic_str = f"{player2_info.get('heuristic'):.2f}" if player2_info.get('heuristic') is not None else "N/A"
-            player2_title = (
-                f"Player 2 (AI) - Algorithm: {player2_info.get('algorithm', 'None')} | "
-                f"Cost: {player2_info.get('cost', 0)} | "
-                f"Runtime: {p2_runtime_str} | "
-                f"Expanded Nodes: {player2_info.get('expanded_nodes', 0)} | "
-                f"Heuristic: {p2_heuristic_str}"
-            )
-
-        # Set both title bars
-        self.fig.suptitle(
-            f"{player1_title}\n{player2_title}",
-            fontsize=12, fontweight='bold', y=0.98)
+        title = TitleFormatter.format_dual_title(ai_info, player2_info, self.player_mode, self.human_player.human_cost)
+        self.fig.suptitle(title, fontsize=12, fontweight='bold', y=0.98)
         self.fig.canvas.draw_idle()
 
     def set_fog_of_war(self, enabled):
@@ -209,7 +207,11 @@ class GUIManager:
         self.ai_solution_path = []
         self.ai_full_path = []
         self.ai_step_index = 0
+        self.ai_solution_path_p2 = []
+        self.ai_full_path_p2 = []
+        self.ai_step_index_p2 = 0
         self.last_ai_info = None
+        self.path_walking.stop()
         self.human_player.reset()
         if self.fog_of_war:
             # Re-reveal initial tiles for human mode
@@ -217,101 +219,19 @@ class GUIManager:
                 self.human_player.set_grid(self.current_grid, self.grid_instance)
                 self.human_player.reveal_initial_tiles(self.grid_instance)
 
-    def _get_tile_appearance(self, val, i, j, human_path, ai_path):
-        is_on_ai_path = ai_path and (i, j) in ai_path
-        is_on_human_path = human_path and (i, j) in human_path
-
-        # Check if this is start1 or start2
-        is_start1 = self.grid_instance and (i, j) == self.grid_instance.start1
-        is_start2 = self.grid_instance and (i, j) == self.grid_instance.start2
-
-        # Fog of war: hide unrevealed tiles (except start1 and start2 which are always visible)
-        if self.fog_of_war and not is_start1 and not is_start2 and (i, j) not in self.human_player.revealed_tiles:
-            if is_on_ai_path:
-                # Hide trap value on AI path - show as empty space with AI path color
-                if val == 'X':
-                    return ' ', '#3544CA', 'black'
-                return val, '#3544CA', 'white' if val in ['T', '#', 'S'] else 'black'
-            return '?', 'lightgray', 'black'
-
-        # Hide traps until the player steps on them (fog of war mode only)
-        if self.fog_of_war and val == 'X' and (i, j) not in self.human_player.stepped_on_tiles:
-            display_val = ' '
-            color = 'white'
-            fg = 'black'
-        else:
-            display_val = val
-            # Default colors
-            if val == 'S':
-                if is_start1:
-                    color = '#3544CA'  # Dark blue for Start 1 (AI/Player 1)
-                    fg = 'white'
-                elif is_start2:
-                    color = 'lightblue'  # Light blue for Start 2 (Human/Player 2)
-                    fg = 'black'
-                else:
-                    color = 'blue'
-                    fg = 'white'
-            else:
-                color = {'T': 'gold', 'X': 'red', '#': 'gray'}.get(val, 'white')
-                fg = 'white' if val in ['T', 'X', '#'] else 'black'
-
-        if is_on_human_path and is_on_ai_path:
-            color = self._get_mixed_path_color(val, is_start1, is_start2, (i, j))
-        elif is_on_human_path:
-            color = self._get_path_color(val, is_human=True, is_start1=is_start1, is_start2=is_start2, pos=(i, j))
-        elif is_on_ai_path:
-            color = self._get_path_color(val, is_human=False, is_start1=is_start1, is_start2=is_start2, pos=(i, j))
-
-        return display_val, color, fg
-
-    def _get_mixed_path_color(self, tile_val, is_start1=False, is_start2=False, pos=None):
-        # For traps in fog of war, only show cyan if stepped on
-        if tile_val == 'X':
-            if self.fog_of_war and pos and pos not in self.human_player.stepped_on_tiles:
-                return 'lightblue'  # Human path color, hide trap color
-            return 'cyan'
-        elif tile_val == 'T':
-            return 'green'
-        elif tile_val == 'S':
-            if is_start1:
-                return '#3544CA'
-            elif is_start2:
-                return 'lightblue'
-            return '#5B6FC9'
-        elif tile_val not in ['S']:
-            return '#5B6FC9'
-        return 'blue'
-
-    def _get_path_color(self, tile_val, is_human=False, is_start1=False, is_start2=False, pos=None):
-        # For traps in fog of war, only show special color if stepped on
-        if tile_val == 'X':
-            if self.fog_of_war and is_human and pos and pos not in self.human_player.stepped_on_tiles:
-                return 'lightblue'  # Human path color, hide trap color
-            return 'cyan'
-        elif tile_val == 'T':
-            if is_human:
-                return 'green'
-            else:
-                return '#3544CA'
-        elif tile_val == 'S':
-            if is_start1:
-                return '#3544CA'
-            elif is_start2:
-                return 'lightblue'
-            return 'blue'
-        elif tile_val not in ['S']:
-            if is_human:
-                return 'lightblue'
-            else:
-                return '#3544CA'
-        return 'blue'
-
     def _on_click(self, event):
-        if not self.fog_of_war or event.inaxes != self.ax:
+        if event.inaxes != self.ax:
             return
 
         if not self.algorithm_executed:
+            return
+
+        # AI vs AI mode: animation handles advancement automatically
+        if self.player_mode == 'ai':
+            return
+
+        # Human vs AI mode: fog of war enabled, click on specific tiles
+        if not self.fog_of_war:
             return
 
         x, y = event.xdata, event.ydata
@@ -331,46 +251,14 @@ class GUIManager:
                 self.update_title(self.human_player.get_state())
 
     def show_mode_selection(self, on_selection_callback):
-        # Clear the main axes and display the question
-        self.ax.clear()
-        self.ax.set_xlim(0, 10)
-        self.ax.set_ylim(0, 10)
-        self.ax.axis("off")
+        mode_selector = ModeSelector(self.fig, self.ax)
 
-        # Display question text
-        self.ax.text(5, 7, 'Select Player Mode',
-                    ha='center', va='center',
-                    fontsize=24, fontweight='bold')
-
-        # Create Human button
-        self.ax_human = self.fig.add_axes([0.25, 0.4, 0.2, 0.1])
-        self.btn_human = Button(self.ax_human, 'Human', color='lightblue', hovercolor='#3544CA')
-
-        # Create AI button
-        self.ax_ai = self.fig.add_axes([0.55, 0.4, 0.2, 0.1])
-        self.btn_ai = Button(self.ax_ai, 'AI', color='#3544CA', hovercolor='#CABB35')
-
-        def on_human_click(event):
-            human_or_ai('human', True)
-
-        def on_ai_click(event):
-            human_or_ai('ai', False)
-
-        def human_or_ai(player_mode, fog_of_war):
+        def on_mode_selected(player_mode, fog_of_war):
             self.player_mode = player_mode
             self.fog_of_war = fog_of_war
-            # Disconnect button events before removing
-            self.btn_human.disconnect_events()
-            self.btn_ai.disconnect_events()
-            self.ax_human.remove()
-            self.ax_ai.remove()
             on_selection_callback()
-            self.fig.canvas.draw_idle()
-        
-        self.btn_human.on_clicked(on_human_click)
-        self.btn_ai.on_clicked(on_ai_click)
 
-        self.fig.canvas.draw_idle()
+        mode_selector.show_selection(on_mode_selected)
 
     def show(self):
         plt.show()

@@ -92,13 +92,14 @@ class TreasureHunterGame:
         # Run algorithm for Player 1
         result = self.algorithm_runner.run_algorithm(algorithm_name, algorithm_func)
         self.gui.mark_algorithm_executed()
-        self.gui.render_grid(self.grid.grid, result['path'], grid_instance=self.grid)
+
         # In AI vs AI mode, also run for Player 2
         if self.gui.player_mode == 'ai':
             result_p2 = self.algorithm_runner_p2.run_algorithm(algorithm_name, algorithm_func)
+            self.gui.render_grid(self.grid.grid, result['path'], grid_instance=self.grid, solution_path_p2=result_p2['path'])
             self.gui.update_title(result, result_p2)
         else:
-            
+            self.gui.render_grid(self.grid.grid, result['path'], grid_instance=self.grid)
             self.gui.update_title(result)
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import time
-import math
-import numpy
+from Core.treasure_sorter import TreasureSorter
+from Core.path_calculator import PathCostCalculator
+
 
 class AlgorithmRunner:
     def __init__(self, grid_instance, use_start2=False):
@@ -21,26 +22,12 @@ class AlgorithmRunner:
         self.heuristic_value = None
         self.current_algorithm = algorithm_name
 
-        # Use start1 for Player 1 or start2 for Player 2 depending on configuration
         if self.use_start2:
             ai_start = self.grid.start2 if hasattr(self.grid, 'start2') and self.grid.start2 else self.grid.start
         else:
             ai_start = self.grid.start1 if hasattr(self.grid, 'start1') and self.grid.start1 else self.grid.start
 
-        # Use dictionary and Euclidean distance to find closest treasures
-        treasure_distances = {}
-        for treasure in self.grid.end:
-            distance = math.sqrt(
-                (treasure[0] - ai_start[0]) ** 2 +
-                (treasure[1] - ai_start[1]) ** 2
-            )
-            treasure_distances[treasure] = distance
-
-        # Sort treasures by distance
-        keys = list(treasure_distances.keys())
-        values = list(treasure_distances.values())
-        sorted_indices = numpy.argsort(values)
-        sorted_treasures = {keys[i]: values[i] for i in sorted_indices}
+        sorted_treasures = TreasureSorter.sort_by_distance(self.grid.end, ai_start)
 
         # Perform searches to each treasure in order
         start = ai_start
@@ -76,9 +63,7 @@ class AlgorithmRunner:
 
         end_time = time.time()
         self.current_runtime = end_time - start_time
-
-        # Calculate cost
-        self.current_cost = self._calculate_path_cost()
+        self.current_cost = PathCostCalculator.calculate_cost(self.solution_path, self.grid.grid)
 
         print(f"Runtime {algorithm_name}: {self.current_runtime:.4f}s")
         print(f"Nodes Expanded: {self.expanded_nodes}")
@@ -93,25 +78,6 @@ class AlgorithmRunner:
             'heuristic': self.heuristic_value,
             'algorithm': self.current_algorithm
         }
-
-    def _calculate_path_cost(self):
-        if not self.solution_path:
-            return 0
-
-        total_cost = 0
-        for i, (row, col) in enumerate(self.solution_path):
-            if i == 0:  # Skip start position
-                continue
-
-            tile = self.grid.grid[row][col]
-            if tile in ['S', 'T']:  # Starting positions or Treasure
-                total_cost += 0
-            elif tile == 'X':  # Trap
-                total_cost += 5
-            else:  # Regular tile
-                total_cost += 1
-
-        return total_cost
 
     def get_current_state(self):
         return {
