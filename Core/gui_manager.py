@@ -16,6 +16,7 @@ class GUIManager:
         self.ai_full_path = []
         self.ai_step_index = 0
         self.grid_instance = None  # Store grid instance to access start1/start2 positions
+        self.last_ai_info = None  # Store last AI algorithm info for title display
 
         # Create figure and main axes
         self.fig = plt.figure(figsize=(12, 10))
@@ -24,8 +25,8 @@ class GUIManager:
         # Center window and set to 70% of screen size
         self._setup_window()
 
-        # Main grid axes
-        self.ax = self.fig.add_axes([0.05, 0.15, 0.9, 0.8])
+        # Main grid axes (adjusted to make room for two title bars)
+        self.ax = self.fig.add_axes([0.05, 0.15, 0.9, 0.75])
         self.ax.axis("off")
 
         # Button references
@@ -157,22 +158,35 @@ class GUIManager:
         self.fig.canvas.draw_idle()
 
     def update_title(self, info):
-        runtime_str = f"{info.get('runtime', 0):.4f}s" if info.get('runtime', 0) > 0 else "N/A"
-        heuristic_str = f"{info.get('heuristic'):.2f}" if info.get('heuristic') is not None else "N/A"
+        # Store AI info if this is an AI algorithm result
+        if info.get('algorithm') not in ['Human', 'None']:
+            self.last_ai_info = info
 
+        # Use stored AI info if available, otherwise use passed info
+        ai_info = self.last_ai_info if self.last_ai_info else info
+
+        runtime_str = f"{ai_info.get('runtime', 0):.4f}s" if ai_info.get('runtime', 0) > 0 else "N/A"
+        heuristic_str = f"{ai_info.get('heuristic'):.2f}" if ai_info.get('heuristic') is not None else "N/A"
+
+        # Player 1 (AI) stats
+        player1_title = (
+            f"Player 1 (AI) - Algorithm: {ai_info.get('algorithm', 'None')} | "
+            f"Cost: {ai_info.get('cost', 0)} | "
+            f"Runtime: {runtime_str} | "
+            f"Expanded Nodes: {ai_info.get('expanded_nodes', 0)} | "
+            f"Heuristic: {heuristic_str}"
+        )
+
+        # Player 2 (Human) stats
         if self.player_mode == 'human':
-            cost_display = self.human_player.human_cost
+            player2_title = f"Player 2 (Human) - Cost: {self.human_player.human_cost}"
         else:
-            cost_display = info.get('cost', 0)
+            player2_title = "Player 2 (Human) - N/A"
 
+        # Set both title bars
         self.fig.suptitle(
-            f"Grid Size: {self.n}x{self.n} " +
-            f"| Algorithm: {info.get('algorithm', 'None')} " +
-            f"| Cost: {cost_display} " +
-            f"| Runtime: {runtime_str} " +
-            f"| Expanded Nodes: {info.get('expanded_nodes', 0)} " +
-            f"| Heuristic Value: {heuristic_str}",
-            fontsize=14, fontweight='bold')
+            f"{player1_title}\n{player2_title}",
+            fontsize=12, fontweight='bold', y=0.98)
         self.fig.canvas.draw_idle()
 
     def set_fog_of_war(self, enabled):
@@ -186,6 +200,7 @@ class GUIManager:
         self.ai_solution_path = []
         self.ai_full_path = []
         self.ai_step_index = 0
+        self.last_ai_info = None
         self.human_player.reset()
         if self.fog_of_war:
             # Re-reveal initial tiles for human mode
@@ -204,7 +219,10 @@ class GUIManager:
         # Fog of war: hide unrevealed tiles (except start1 and start2 which are always visible)
         if self.fog_of_war and not is_start1 and not is_start2 and (i, j) not in self.human_player.revealed_tiles:
             if is_on_ai_path:
-                return val, '#3544CA', 'white' if val in ['T', 'X', '#', 'S'] else 'black'
+                # Hide trap value on AI path - show as empty space with AI path color
+                if val == 'X':
+                    return ' ', '#3544CA', 'black'
+                return val, '#3544CA', 'white' if val in ['T', '#', 'S'] else 'black'
             return '?', 'lightgray', 'black'
 
         # Hide traps until the player steps on them (fog of war mode only)
