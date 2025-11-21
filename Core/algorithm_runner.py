@@ -3,8 +3,9 @@ import math
 import numpy
 
 class AlgorithmRunner:
-    def __init__(self, grid_instance):
+    def __init__(self, grid_instance, use_start2=False):
         self.grid = grid_instance
+        self.use_start2 = use_start2  # If True, use start2 instead of start1
         self.solution_path = []
         self.expanded_nodes = 0
         self.heuristic_value = None
@@ -20,8 +21,11 @@ class AlgorithmRunner:
         self.heuristic_value = None
         self.current_algorithm = algorithm_name
 
-        # Use start1 for AI/Player 1
-        ai_start = self.grid.start1 if hasattr(self.grid, 'start1') and self.grid.start1 else self.grid.start
+        # Use start1 for Player 1 or start2 for Player 2 depending on configuration
+        if self.use_start2:
+            ai_start = self.grid.start2 if hasattr(self.grid, 'start2') and self.grid.start2 else self.grid.start
+        else:
+            ai_start = self.grid.start1 if hasattr(self.grid, 'start1') and self.grid.start1 else self.grid.start
 
         # Use dictionary and Euclidean distance to find closest treasures
         treasure_distances = {}

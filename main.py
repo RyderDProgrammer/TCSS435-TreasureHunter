@@ -7,7 +7,8 @@ class TreasureHunterGame:
         # Initialize core components
         self.grid = Grid(n=15)
         self.gui = GUIManager(grid_size=15)
-        self.algorithm_runner = AlgorithmRunner(self.grid)
+        self.algorithm_runner = AlgorithmRunner(self.grid)  # Player 1
+        self.algorithm_runner_p2 = AlgorithmRunner(self.grid, use_start2=True)  # Player 2
 
         # Show mode selection dialog first
         self.gui.show_mode_selection(self.on_mode_selected)
@@ -40,10 +41,16 @@ class TreasureHunterGame:
     def create_grid(self, event=None):
         self.grid.generate_grid()
         self.algorithm_runner.reset()
+        self.algorithm_runner_p2.reset()
         self.gui.n = self.grid.n
         self.gui.reset_for_new_grid()
         self.gui.render_grid(self.grid.grid, grid_instance=self.grid)
-        self.gui.update_title(self.algorithm_runner.get_current_state())
+        # In AI vs AI mode, pass both player states
+        if self.gui.player_mode == 'ai':
+            self.gui.update_title(self.algorithm_runner.get_current_state(),
+                                 self.algorithm_runner_p2.get_current_state())
+        else:
+            self.gui.update_title(self.algorithm_runner.get_current_state())
 
     def increase_size(self, event):
         self.grid.n += 1
@@ -81,10 +88,18 @@ class TreasureHunterGame:
             # Reset AI and fog of war, but keep the same grid
             self.algorithm_runner.reset()
             self.gui.reset_for_new_grid()
+
+        # Run algorithm for Player 1
         result = self.algorithm_runner.run_algorithm(algorithm_name, algorithm_func)
         self.gui.mark_algorithm_executed()
         self.gui.render_grid(self.grid.grid, result['path'], grid_instance=self.grid)
-        self.gui.update_title(result)
+        # In AI vs AI mode, also run for Player 2
+        if self.gui.player_mode == 'ai':
+            result_p2 = self.algorithm_runner_p2.run_algorithm(algorithm_name, algorithm_func)
+            self.gui.update_title(result, result_p2)
+        else:
+            
+            self.gui.update_title(result)
 
 if __name__ == "__main__":
     TreasureHunterGame()

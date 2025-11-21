@@ -157,7 +157,7 @@ class GUIManager:
         self._draw_grid_tiles()
         self.fig.canvas.draw_idle()
 
-    def update_title(self, info):
+    def update_title(self, info, player2_info=None):
         # Store AI info if this is an AI algorithm result
         if info.get('algorithm') not in ['Human', 'None']:
             self.last_ai_info = info
@@ -168,7 +168,7 @@ class GUIManager:
         runtime_str = f"{ai_info.get('runtime', 0):.4f}s" if ai_info.get('runtime', 0) > 0 else "N/A"
         heuristic_str = f"{ai_info.get('heuristic'):.2f}" if ai_info.get('heuristic') is not None else "N/A"
 
-        # Player 1 (AI) stats
+        # Player 1 stats
         player1_title = (
             f"Player 1 (AI) - Algorithm: {ai_info.get('algorithm', 'None')} | "
             f"Cost: {ai_info.get('cost', 0)} | "
@@ -177,11 +177,20 @@ class GUIManager:
             f"Heuristic: {heuristic_str}"
         )
 
-        # Player 2 (Human) stats
+        # Player 2 stats
         if self.player_mode == 'human':
             player2_title = f"Player 2 (Human) - Cost: {self.human_player.human_cost}"
-        else:
-            player2_title = "Player 2 (Human) - N/A"
+        elif self.player_mode == 'ai' and player2_info:
+            # AI vs AI mode with Player 2 stats
+            p2_runtime_str = f"{player2_info.get('runtime', 0):.4f}s" if player2_info.get('runtime', 0) > 0 else "N/A"
+            p2_heuristic_str = f"{player2_info.get('heuristic'):.2f}" if player2_info.get('heuristic') is not None else "N/A"
+            player2_title = (
+                f"Player 2 (AI) - Algorithm: {player2_info.get('algorithm', 'None')} | "
+                f"Cost: {player2_info.get('cost', 0)} | "
+                f"Runtime: {p2_runtime_str} | "
+                f"Expanded Nodes: {player2_info.get('expanded_nodes', 0)} | "
+                f"Heuristic: {p2_heuristic_str}"
+            )
 
         # Set both title bars
         self.fig.suptitle(
