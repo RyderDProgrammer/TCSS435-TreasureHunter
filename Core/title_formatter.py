@@ -1,3 +1,4 @@
+from Algorithms import Alpha_Beta
 class TitleFormatter:
     @staticmethod
     def format_player_stats(player_num, is_ai, info, is_human_cost=False):
@@ -13,7 +14,8 @@ class TitleFormatter:
             f"Cost: {info.get('cost', 0)} | "
             f"Runtime: {runtime_str} | "
             f"Expanded Nodes: {info.get('expanded_nodes', 0)} | "
-            f"Heuristic: {heuristic_str}"
+            f"Heuristic: {heuristic_str} | "
+            f"ABP Depth: {Alpha_Beta.MAX_DEPTH}"
         )
 
     @staticmethod
