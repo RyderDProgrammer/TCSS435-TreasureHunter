@@ -34,7 +34,9 @@ class TreasureHunterGame:
             'greedy': self.do_Greedy_BFS,
             'minimax': self.do_MiniMax,
             'alpha_beta': self.do_Alpha_Beta,
-            'new_grid': self.create_grid
+            'new_grid': self.create_grid,
+            'increase_depth': self.increase_depth,
+            'decrease_depth': self.decrease_depth
         }
         self.gui.create_buttons(callbacks)
 
@@ -60,6 +62,13 @@ class TreasureHunterGame:
         if self.grid.n > 8:
             self.grid.n -= 1
             self.create_grid()
+
+    # Configure MAX_DEPTH for alpha-beta pruning
+    def increase_depth(self, event):
+        Alpha_Beta.MAX_DEPTH += 1
+
+    def decrease_depth(self, event):
+        Alpha_Beta.MAX_DEPTH -= 1
 
     # Algorithm execution methods
     def do_BFS(self, event=None):

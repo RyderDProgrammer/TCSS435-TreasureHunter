@@ -69,7 +69,7 @@ class GUIManager:
         BUTTON_HEIGHT = 0.06
         BUTTON_WIDTH_SMALL = 0.065
         BUTTON_WIDTH_MEDIUM = 0.10
-        BUTTON_SPACING = 0.020
+        BUTTON_SPACING = 0.007
 
         x_pos = 0.02
 
@@ -83,6 +83,17 @@ class GUIManager:
         self.buttons['increase'] = Button(ax_increase, 'Increase')
         self.buttons['increase'].on_clicked(callbacks.get('increase'))
         x_pos += BUTTON_WIDTH_MEDIUM + BUTTON_SPACING
+
+        # buttons to control alpha-beta pruning max depth
+        depth_decrease = self.fig.add_axes([x_pos, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
+        self.buttons['decrease_depth'] = Button(depth_decrease, 'Depth -')
+        self.buttons['decrease_depth'].on_clicked(callbacks.get('decrease_depth'))
+        x_pos += BUTTON_WIDTH_SMALL + BUTTON_SPACING
+
+        depth_increase = self.fig.add_axes([x_pos, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
+        self.buttons['increase_depth'] = Button(depth_increase, 'Depth +')
+        self.buttons['increase_depth'].on_clicked(callbacks.get('increase_depth'))
+        x_pos += BUTTON_WIDTH_SMALL + BUTTON_SPACING
 
         # Algorithm buttons
         algorithm_buttons = [
