@@ -33,8 +33,8 @@ class GUIManager:
         # Center window and set to 70% of screen size
         self._setup_window()
 
-        # Main grid axes (adjusted to make room for two title bars)
-        self.ax = self.fig.add_axes([0.05, 0.15, 0.9, 0.75])
+        # Main grid axes (adjusted to make room for title bars and top button)
+        self.ax = self.fig.add_axes([0.05, 0.15, 0.9, 0.68])
         self.ax.axis("off")
 
         # Button references
@@ -71,8 +71,8 @@ class GUIManager:
         BUTTON_WIDTH_MEDIUM = 0.10
         BUTTON_SPACING = 0.007
 
-        # Switch mode button at top left
-        ax_switch_mode = self.fig.add_axes([0.02, 0.92, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
+        # Switch mode button at top left (below title area)
+        ax_switch_mode = self.fig.add_axes([0.02, 0.85, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
         self.buttons['switch_mode'] = Button(ax_switch_mode, 'Switch Mode')
         self.buttons['switch_mode'].on_clicked(callbacks.get('switch_mode'))
 

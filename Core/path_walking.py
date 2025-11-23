@@ -46,7 +46,7 @@ class PathWalking:
 
         max_frames = (len(self.gui.ai_full_path) - 1 + len(self.gui.ai_full_path_p2) - 1) * 2
         self.animation = FuncAnimation(self.gui.fig, animate, frames=max_frames,
-                                      interval=50, repeat=False, blit=False)
+                                      interval=1, repeat=False, blit=False)
         self.gui.fig.canvas.draw_idle()
 
     def stop(self):

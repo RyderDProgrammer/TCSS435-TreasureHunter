@@ -64,12 +64,25 @@ class TreasureHunterGame:
             self.grid.n -= 1
             self.create_grid()
 
-    # Configure MAX_DEPTH for alpha-beta pruning
+    # Configure MAX_DEPTH for alpha-beta pruning and minimax
     def increase_depth(self, event):
         Alpha_Beta.MAX_DEPTH += 1
+        MiniMax.MAX_DEPTH += 1
+        self._refresh_title()
 
     def decrease_depth(self, event):
-        Alpha_Beta.MAX_DEPTH -= 1
+        if Alpha_Beta.MAX_DEPTH > 1:
+            Alpha_Beta.MAX_DEPTH -= 1
+            MiniMax.MAX_DEPTH -= 1
+            self._refresh_title()
+
+    def _refresh_title(self):
+        # Refresh title to show updated depth
+        if self.gui.player_mode == 'ai':
+            self.gui.update_title(self.algorithm_runner.get_current_state(),
+                                 self.algorithm_runner_p2.get_current_state())
+        else:
+            self.gui.update_title(self.algorithm_runner.get_current_state())
 
     def switch_mode(self, event=None):
         # Toggle between 'ai' and 'human' modes
