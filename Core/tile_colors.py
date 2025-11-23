@@ -2,8 +2,9 @@ class TileColors:
     @staticmethod
     def get_path_color(tile_val, is_human, is_start1, is_start2, fog_of_war, stepped_on):
         if tile_val == 'X':
-            if fog_of_war and is_human and not stepped_on:
-                return 'lightblue'
+            if fog_of_war and not stepped_on:
+                # In fog of war, don't reveal trap until human steps on it
+                return 'lightblue' if is_human else '#3544CA'
             return 'cyan'
         elif tile_val == 'T':
             return 'green' if is_human else '#3544CA'

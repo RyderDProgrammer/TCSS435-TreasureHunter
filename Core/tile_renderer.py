@@ -12,10 +12,7 @@ class TileRenderer:
         is_start2 = grid_instance and (i, j) == grid_instance.start2
 
         if fog_of_war and not is_start1 and not is_start2 and (i, j) not in human_player.revealed_tiles:
-            if is_on_ai_path:
-                if val == 'X':
-                    return ' ', '#3544CA', 'black'
-                return val, '#3544CA', 'white' if val in ['T', '#', 'S'] else 'black'
+            # In fog of war, unrevealed tiles show as unknown - don't reveal AI path
             return '?', 'lightgray', 'black'
 
         if fog_of_war and val == 'X' and (i, j) not in human_player.stepped_on_tiles:

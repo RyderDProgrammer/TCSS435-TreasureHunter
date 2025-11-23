@@ -149,8 +149,9 @@ class GUIManager:
         if solution_path is not None and len(solution_path) > 0:
             self.ai_full_path = solution_path
             if self.fog_of_war:
-                self.ai_step_index = 1
-                self.ai_solution_path = solution_path[:2] if len(solution_path) > 1 else solution_path
+                # Only show AI's starting point, hide the rest until human reveals
+                self.ai_step_index = 0
+                self.ai_solution_path = solution_path[:1]
             elif self.player_mode == 'ai':
                 # AI vs AI mode: start with empty paths, animation will fill them
                 self.ai_step_index = -1
