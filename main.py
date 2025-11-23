@@ -36,7 +36,8 @@ class TreasureHunterGame:
             'alpha_beta': self.do_Alpha_Beta,
             'new_grid': self.create_grid,
             'increase_depth': self.increase_depth,
-            'decrease_depth': self.decrease_depth
+            'decrease_depth': self.decrease_depth,
+            'switch_mode': self.switch_mode
         }
         self.gui.create_buttons(callbacks)
 
@@ -69,6 +70,17 @@ class TreasureHunterGame:
 
     def decrease_depth(self, event):
         Alpha_Beta.MAX_DEPTH -= 1
+
+    def switch_mode(self, event=None):
+        # Toggle between 'ai' and 'human' modes
+        if self.gui.player_mode == 'ai':
+            self.gui.player_mode = 'human'
+            self.gui.fog_of_war = True
+        else:
+            self.gui.player_mode = 'ai'
+            self.gui.fog_of_war = False
+        # Reset and regenerate grid for new mode
+        self.create_grid()
 
     # Algorithm execution methods
     def do_BFS(self, event=None):

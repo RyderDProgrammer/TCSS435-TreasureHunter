@@ -71,6 +71,11 @@ class GUIManager:
         BUTTON_WIDTH_MEDIUM = 0.10
         BUTTON_SPACING = 0.007
 
+        # Switch mode button at top left
+        ax_switch_mode = self.fig.add_axes([0.02, 0.92, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
+        self.buttons['switch_mode'] = Button(ax_switch_mode, 'Switch Mode')
+        self.buttons['switch_mode'].on_clicked(callbacks.get('switch_mode'))
+
         x_pos = 0.02
 
         # Size control buttons
