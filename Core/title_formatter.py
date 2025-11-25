@@ -7,6 +7,7 @@ class TitleFormatter:
 
         runtime_str = f"{info.get('runtime', 0):.4f}s" if info.get('runtime', 0) > 0 else "N/A"
         heuristic_str = f"{info.get('heuristic'):.2f}" if info.get('heuristic') is not None else "N/A"
+        pruned_str = str(info.get('pruned_branches')) if info.get('pruned_branches') is not None else "N/A"
 
         player_type = "AI" if is_ai else "Human"
         return (
@@ -15,6 +16,7 @@ class TitleFormatter:
             f"Runtime: {runtime_str} | "
             f"Expanded Nodes: {info.get('expanded_nodes', 0)} | "
             f"Heuristic: {heuristic_str} | "
+            f"Pruned: {pruned_str} | "
             f"ABP Depth: {Alpha_Beta.MAX_DEPTH}"
         )
 

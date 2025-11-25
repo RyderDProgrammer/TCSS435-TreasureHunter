@@ -10,6 +10,7 @@ class AlgorithmRunner:
         self.solution_path = []
         self.expanded_nodes = 0
         self.heuristic_value = None
+        self.pruned_branches = None
         self.current_cost = 0
         self.current_runtime = 0.0
         self.current_algorithm = "None"
@@ -20,6 +21,7 @@ class AlgorithmRunner:
         self.expanded_nodes = 0
         self.solution_path = []
         self.heuristic_value = None
+        self.pruned_branches = None
         self.current_algorithm = algorithm_name
 
         if self.use_start2:
@@ -36,15 +38,22 @@ class AlgorithmRunner:
 
         for treasure in sorted_treasures:
             result = algorithm_func(self.grid.grid, start, treasure)
-            path, expanded, *heuristic = result
+            path, expanded, *extra = result
 
             if path is None:
                 print(f"Unreachable Treasure")
                 continue
 
-            if heuristic:
-                total_heuristic += heuristic[0]
+            # Handle heuristic (3rd return value)
+            if extra:
+                total_heuristic += extra[0]
                 heuristic_count += 1
+
+            # Handle pruned_branches (4th return value, only for Alpha-Beta)
+            if len(extra) >= 2:
+                if self.pruned_branches is None:
+                    self.pruned_branches = 0
+                self.pruned_branches += extra[1]
 
             self.expanded_nodes += expanded
 
@@ -76,6 +85,7 @@ class AlgorithmRunner:
             'runtime': self.current_runtime,
             'expanded_nodes': self.expanded_nodes,
             'heuristic': self.heuristic_value,
+            'pruned_branches': self.pruned_branches,
             'algorithm': self.current_algorithm
         }
 
@@ -85,13 +95,15 @@ class AlgorithmRunner:
             'cost': self.current_cost,
             'runtime': self.current_runtime,
             'expanded_nodes': self.expanded_nodes,
-            'heuristic': self.heuristic_value
+            'heuristic': self.heuristic_value,
+            'pruned_branches': self.pruned_branches
         }
 
     def reset(self):
         self.solution_path = []
         self.expanded_nodes = 0
         self.heuristic_value = None
+        self.pruned_branches = None
         self.current_cost = 0
         self.current_runtime = 0.0
         self.current_algorithm = "None"

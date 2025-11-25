@@ -5,12 +5,16 @@ import math
 #counter for nodes expanded
 nodes_expanded = 0
 
+#counter for pruned branches
+pruned_branches = 0
+
 #configurable search depth
 MAX_DEPTH = 2
 
 def Alpha_Beta(grid, start, end):
-    global nodes_expanded
+    global nodes_expanded, pruned_branches
     nodes_expanded = 0
+    pruned_branches = 0
 
     #place opponent
     opponent_start = place_opponent_strategic(grid, start, end)
@@ -43,7 +47,7 @@ def Alpha_Beta(grid, start, end):
     else:
         heuristic_value = -manhattan_distance(path[-1], end) - len(path)
 
-    return path, nodes_expanded, heuristic_value
+    return path, nodes_expanded, heuristic_value, pruned_branches
 
 
 def get_simple_path(start, end, grid):
@@ -269,7 +273,7 @@ def minimax_decision(state, max_depth, is_maximizing, visited_set):
 Updated to include alpha-beta pruning
 '''
 def minimax_value(state, depth, max_depth, is_maximizing, alpha, beta):
-    global nodes_expanded
+    global nodes_expanded, pruned_branches
     nodes_expanded += 1
 
     # Terminal or depth reached
@@ -305,6 +309,7 @@ def minimax_value(state, depth, max_depth, is_maximizing, alpha, beta):
             alpha = max(alpha, max_value)
 
             if alpha >= beta:   # prune
+                pruned_branches += 1
                 break
         return max_value
 
@@ -319,6 +324,7 @@ def minimax_value(state, depth, max_depth, is_maximizing, alpha, beta):
             beta = min(beta, min_value)
 
             if beta <= alpha:  # prune
+                pruned_branches += 1
                 break
         return min_value
 
