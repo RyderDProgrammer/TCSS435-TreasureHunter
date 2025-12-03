@@ -84,6 +84,11 @@ class GUIManager:
         self.buttons['switch_mode'] = Button(ax_switch_mode, 'Switch Mode')
         self.buttons['switch_mode'].on_clicked(callbacks.get('switch_mode'))
 
+        #bayesian toggle button
+        ax_bayesian = self.fig.add_axes([0.13, 0.85, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
+        self.buttons['toggle_bayesian'] = Button(ax_bayesian, 'Bayesian')
+        self.buttons['toggle_bayesian'].on_clicked(callbacks.get('toggle_bayesian'))
+
         # Top row: Algorithm buttons (aligned with grid left edge)
         x_pos = GRID_LEFT
         algorithm_buttons = [
@@ -237,12 +242,12 @@ class GUIManager:
             self._draw_grid_tiles()
             self.fig.canvas.draw_idle()
 
-    def update_title(self, info, player2_info=None):
+    def update_title(self, info, player2_info=None, use_bayesian=False):
         if info.get('algorithm') not in ['Human', 'None']:
             self.last_ai_info = info
 
         ai_info = self.last_ai_info if self.last_ai_info else info
-        title = TitleFormatter.format_dual_title(ai_info, player2_info, self.player_mode, self.human_player.human_cost, self.noise_level)
+        title = TitleFormatter.format_dual_title(ai_info, player2_info, self.player_mode, self.human_player.human_cost, self.noise_level, use_bayesian)
         self.fig.suptitle(title, fontsize=12, fontweight='bold', y=0.98)
         self.fig.canvas.draw_idle()
 

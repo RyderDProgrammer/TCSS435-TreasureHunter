@@ -1,4 +1,4 @@
-from Core import Grid, GUIManager, AlgorithmRunner
+from Core import Grid, GUIManager, AlgorithmRunner, BayesianAlgorithmRunner
 from Algorithms import BFS, DFS, UCS, A_Star, Greedy_BFS, MiniMax, Alpha_Beta
 
 
@@ -7,9 +7,17 @@ class TreasureHunterGame:
         # Initialize core components
         self.grid = Grid(n=15)
         self.gui = GUIManager(grid_size=15)
-        # Pass sensor model to algorithm runners so they use noisy observations
+
+        # Initialize both regular and Bayesian algorithm runners
         self.algorithm_runner = AlgorithmRunner(self.grid, sensor_model=self.gui.sensor_model)  # Player 1
         self.algorithm_runner_p2 = AlgorithmRunner(self.grid, use_start2=True, sensor_model=self.gui.sensor_model)  # Player 2
+
+        #bayesian runners
+        self.bayesian_runner = BayesianAlgorithmRunner(self.grid, sensor_model=self.gui.sensor_model)
+        self.bayesian_runner_p2 = BayesianAlgorithmRunner(self.grid, use_start2=True, sensor_model=self.gui.sensor_model)
+
+        #mode flag
+        self.use_bayesian = False
 
         # Show mode selection dialog first
         self.gui.show_mode_selection(self.on_mode_selected)
@@ -39,6 +47,7 @@ class TreasureHunterGame:
             'increase_depth': self.increase_depth,
             'decrease_depth': self.decrease_depth,
             'switch_mode': self.switch_mode,
+            'toggle_bayesian': self.toggle_bayesian,
             'no_noise': self.set_no_noise,
             'low_noise': self.set_low_noise,
             'med_noise': self.set_med_noise,
@@ -50,15 +59,19 @@ class TreasureHunterGame:
         self.grid.generate_grid()
         self.algorithm_runner.reset()
         self.algorithm_runner_p2.reset()
+        self.bayesian_runner.reset()
+        self.bayesian_runner_p2.reset()
         self.gui.n = self.grid.n
         self.gui.reset_for_new_grid()
         self.gui.render_grid(self.grid.grid, grid_instance=self.grid)
         # In AI vs AI mode, pass both player states
         if self.gui.player_mode == 'ai':
             self.gui.update_title(self.algorithm_runner.get_current_state(),
-                                 self.algorithm_runner_p2.get_current_state())
+                                 self.algorithm_runner_p2.get_current_state(),
+                                 use_bayesian=self.use_bayesian)
         else:
-            self.gui.update_title(self.algorithm_runner.get_current_state())
+            self.gui.update_title(self.algorithm_runner.get_current_state(),
+                                 use_bayesian=self.use_bayesian)
 
     def increase_size(self, event):
         self.grid.n += 1
@@ -85,9 +98,11 @@ class TreasureHunterGame:
         # Refresh title to show updated depth
         if self.gui.player_mode == 'ai':
             self.gui.update_title(self.algorithm_runner.get_current_state(),
-                                 self.algorithm_runner_p2.get_current_state())
+                                 self.algorithm_runner_p2.get_current_state(),
+                                 use_bayesian=self.use_bayesian)
         else:
-            self.gui.update_title(self.algorithm_runner.get_current_state())
+            self.gui.update_title(self.algorithm_runner.get_current_state(),
+                                 use_bayesian=self.use_bayesian)
 
     def switch_mode(self, event=None):
         # Toggle between 'ai' and 'human' modes
@@ -99,6 +114,13 @@ class TreasureHunterGame:
             self.gui.fog_of_war = False
         # Reset and regenerate grid for new mode
         self.create_grid()
+
+    def toggle_bayesian(self, event=None):
+        #toggle Bayesian mode
+        self.use_bayesian = not self.use_bayesian
+        mode_text = "Bayesian ON" if self.use_bayesian else "Bayesian OFF"
+        print(f"Bayesian mode: {mode_text}")
+        self._refresh_title()
 
     # Algorithm execution methods
     def do_BFS(self, event=None):
@@ -126,20 +148,31 @@ class TreasureHunterGame:
         if self.gui.player_mode == 'human' and self.gui.algorithm_executed:
             # Reset AI and fog of war, but keep the same grid
             self.algorithm_runner.reset()
+            self.bayesian_runner.reset()
             self.gui.reset_for_new_grid()
 
-        # Run algorithm for Player 1
-        result = self.algorithm_runner.run_algorithm(algorithm_name, algorithm_func)
+        #choose runner based on Bayesian mode
+        if self.use_bayesian:
+            #run Bayesian algorithm for Player 1
+            result = self.bayesian_runner.run_algorithm_with_beliefs(algorithm_name, algorithm_func)
+        else:
+            #run regular algorithm for Player 1
+            result = self.algorithm_runner.run_algorithm(algorithm_name, algorithm_func)
+
         self.gui.mark_algorithm_executed()
 
         # In AI vs AI mode, also run for Player 2
         if self.gui.player_mode == 'ai':
-            result_p2 = self.algorithm_runner_p2.run_algorithm(algorithm_name, algorithm_func)
+            if self.use_bayesian:
+                result_p2 = self.bayesian_runner_p2.run_algorithm_with_beliefs(algorithm_name, algorithm_func)
+            else:
+                result_p2 = self.algorithm_runner_p2.run_algorithm(algorithm_name, algorithm_func)
+
             self.gui.render_grid(self.grid.grid, result['path'], grid_instance=self.grid, solution_path_p2=result_p2['path'])
-            self.gui.update_title(result, result_p2)
+            self.gui.update_title(result, result_p2, use_bayesian=self.use_bayesian)
         else:
             self.gui.render_grid(self.grid.grid, result['path'], grid_instance=self.grid)
-            self.gui.update_title(result)
+            self.gui.update_title(result, use_bayesian=self.use_bayesian)
 
     # Noise level control methods
     def set_no_noise(self, event=None):

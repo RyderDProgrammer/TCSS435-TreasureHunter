@@ -35,8 +35,20 @@ class TileRenderer:
                     color = 'blue'
                     fg = 'white'
             else:
-                color = {'T': 'gold', 'X': 'red', '#': 'gray'}.get(display_value, 'white')
-                fg = 'white' if display_value in ['T', 'X', '#'] else 'black'
+                #special handling for treasures: real vs false positives
+                if display_value == 'T':
+                    #check if this is real treasure or false positive from sensor noise
+                    if val == 'T':
+                        #real treasure - show in pink
+                        color = 'hotpink'
+                    else:
+                        #false positive from sensor noise - show in yellow
+                        color = 'gold'
+                    fg = 'white'
+                else:
+                    # Other tiles (traps, walls, empty)
+                    color = {'X': 'red', '#': 'gray'}.get(display_value, 'white')
+                    fg = 'white' if display_value in ['X', '#'] else 'black'
 
         stepped_on = (i, j) in human_player.stepped_on_tiles
         if is_on_human_path and is_on_ai_path:

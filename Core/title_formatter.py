@@ -21,7 +21,7 @@ class TitleFormatter:
         )
 
     @staticmethod
-    def format_dual_title(player1_info, player2_info, player_mode, human_cost=None, noise_level='none'):
+    def format_dual_title(player1_info, player2_info, player_mode, human_cost=None, noise_level='none', use_bayesian=False):
         player1_title = TitleFormatter.format_player_stats(1, True, player1_info)
 
         if player_mode == 'human':
@@ -31,8 +31,9 @@ class TitleFormatter:
         else:
             player2_title = "Player 2 - N/A"
 
-        # Add noise level indicator
+        #add noise level and Bayesian mode indicators
         noise_display = noise_level.capitalize() if noise_level != 'none' else 'None'
-        noise_info = f"Sensor Noise: {noise_display}"
+        bayesian_display = "ON" if use_bayesian else "OFF"
+        status_info = f"Sensor Noise: {noise_display} | Bayesian Mode: {bayesian_display}"
 
-        return f"{player1_title}\n{player2_title}\n{noise_info}"
+        return f"{player1_title}\n{player2_title}\n{status_info}"
