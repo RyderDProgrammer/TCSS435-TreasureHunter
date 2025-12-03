@@ -7,8 +7,9 @@ class TreasureHunterGame:
         # Initialize core components
         self.grid = Grid(n=15)
         self.gui = GUIManager(grid_size=15)
-        self.algorithm_runner = AlgorithmRunner(self.grid)  # Player 1
-        self.algorithm_runner_p2 = AlgorithmRunner(self.grid, use_start2=True)  # Player 2
+        # Pass sensor model to algorithm runners so they use noisy observations
+        self.algorithm_runner = AlgorithmRunner(self.grid, sensor_model=self.gui.sensor_model)  # Player 1
+        self.algorithm_runner_p2 = AlgorithmRunner(self.grid, use_start2=True, sensor_model=self.gui.sensor_model)  # Player 2
 
         # Show mode selection dialog first
         self.gui.show_mode_selection(self.on_mode_selected)
@@ -37,7 +38,11 @@ class TreasureHunterGame:
             'new_grid': self.create_grid,
             'increase_depth': self.increase_depth,
             'decrease_depth': self.decrease_depth,
-            'switch_mode': self.switch_mode
+            'switch_mode': self.switch_mode,
+            'no_noise': self.set_no_noise,
+            'low_noise': self.set_low_noise,
+            'med_noise': self.set_med_noise,
+            'high_noise': self.set_high_noise
         }
         self.gui.create_buttons(callbacks)
 
@@ -135,6 +140,19 @@ class TreasureHunterGame:
         else:
             self.gui.render_grid(self.grid.grid, result['path'], grid_instance=self.grid)
             self.gui.update_title(result)
+
+    # Noise level control methods
+    def set_no_noise(self, event=None):
+        self.gui.set_noise_level('none')
+
+    def set_low_noise(self, event=None):
+        self.gui.set_noise_level('low')
+
+    def set_med_noise(self, event=None):
+        self.gui.set_noise_level('medium')
+
+    def set_high_noise(self, event=None):
+        self.gui.set_noise_level('high')
 
 if __name__ == "__main__":
     TreasureHunterGame()

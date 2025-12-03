@@ -6,6 +6,7 @@ from Core.path_walking import PathWalking
 from Core.tile_renderer import TileRenderer
 from Core.title_formatter import TitleFormatter
 from Core.mode_selector import ModeSelector
+from Core.sensor_model import SensorModel
 
 
 class GUIManager:
@@ -25,6 +26,8 @@ class GUIManager:
         self.grid_instance = None
         self.last_ai_info = None
         self.path_walking = PathWalking(self)
+        self.sensor_model = SensorModel('none')  # Start with no noise
+        self.noise_level = 'none'
 
         # Create figure and main axes
         self.fig = plt.figure(figsize=(12, 10))
@@ -33,8 +36,8 @@ class GUIManager:
         # Center window and set to 70% of screen size
         self._setup_window()
 
-        # Main grid axes (adjusted to make room for title bars and top button)
-        self.ax = self.fig.add_axes([0.05, 0.15, 0.9, 0.68])
+        # Main grid axes (adjusted to make room for title bars and two rows of buttons)
+        self.ax = self.fig.add_axes([0.05, 0.20, 0.9, 0.63])
         self.ax.axis("off")
 
         # Button references
@@ -65,42 +68,24 @@ class GUIManager:
             pass
 
     def create_buttons(self, callbacks):
-        BUTTON_Y = 0.05
-        BUTTON_HEIGHT = 0.06
+        # Grid alignment - match the grid's left edge (0.05)
+        GRID_LEFT = 0.05
+
+        # Button dimensions
+        BUTTON_Y_BOTTOM = 0.05
+        BUTTON_Y_TOP = 0.118
+        BUTTON_HEIGHT = 0.05
         BUTTON_WIDTH_SMALL = 0.065
-        BUTTON_WIDTH_MEDIUM = 0.10
-        BUTTON_SPACING = 0.007
+        BUTTON_WIDTH_MEDIUM = 0.09
+        BUTTON_SPACING = 0.008
 
         # Switch mode button at top left (below title area)
         ax_switch_mode = self.fig.add_axes([0.02, 0.85, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
         self.buttons['switch_mode'] = Button(ax_switch_mode, 'Switch Mode')
         self.buttons['switch_mode'].on_clicked(callbacks.get('switch_mode'))
 
-        x_pos = 0.02
-
-        # Size control buttons
-        ax_decrease = self.fig.add_axes([x_pos, BUTTON_Y, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
-        self.buttons['decrease'] = Button(ax_decrease, 'Decrease')
-        self.buttons['decrease'].on_clicked(callbacks.get('decrease'))
-        x_pos += BUTTON_WIDTH_MEDIUM + BUTTON_SPACING
-
-        ax_increase = self.fig.add_axes([x_pos, BUTTON_Y, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
-        self.buttons['increase'] = Button(ax_increase, 'Increase')
-        self.buttons['increase'].on_clicked(callbacks.get('increase'))
-        x_pos += BUTTON_WIDTH_MEDIUM + BUTTON_SPACING
-
-        # buttons to control alpha-beta pruning max depth
-        depth_decrease = self.fig.add_axes([x_pos, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
-        self.buttons['decrease_depth'] = Button(depth_decrease, 'Depth -')
-        self.buttons['decrease_depth'].on_clicked(callbacks.get('decrease_depth'))
-        x_pos += BUTTON_WIDTH_SMALL + BUTTON_SPACING
-
-        depth_increase = self.fig.add_axes([x_pos, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
-        self.buttons['increase_depth'] = Button(depth_increase, 'Depth +')
-        self.buttons['increase_depth'].on_clicked(callbacks.get('increase_depth'))
-        x_pos += BUTTON_WIDTH_SMALL + BUTTON_SPACING
-
-        # Algorithm buttons
+        # Top row: Algorithm buttons (aligned with grid left edge)
+        x_pos = GRID_LEFT
         algorithm_buttons = [
             ('BFS', 'bfs'),
             ('DFS', 'dfs'),
@@ -112,23 +97,71 @@ class GUIManager:
         ]
 
         for label, key in algorithm_buttons:
-            ax = self.fig.add_axes([x_pos, BUTTON_Y, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
+            ax = self.fig.add_axes([x_pos, BUTTON_Y_TOP, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
             self.buttons[key] = Button(ax, label)
             self.buttons[key].on_clicked(callbacks.get(key))
             x_pos += BUTTON_WIDTH_SMALL + BUTTON_SPACING
 
+        # Bottom row: Control buttons (aligned with grid left edge)
+        x_pos = GRID_LEFT
+
+        # Size control buttons
+        ax_decrease = self.fig.add_axes([x_pos, BUTTON_Y_BOTTOM, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
+        self.buttons['decrease'] = Button(ax_decrease, 'Decrease')
+        self.buttons['decrease'].on_clicked(callbacks.get('decrease'))
+        x_pos += BUTTON_WIDTH_MEDIUM + BUTTON_SPACING
+
+        ax_increase = self.fig.add_axes([x_pos, BUTTON_Y_BOTTOM, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
+        self.buttons['increase'] = Button(ax_increase, 'Increase')
+        self.buttons['increase'].on_clicked(callbacks.get('increase'))
+        x_pos += BUTTON_WIDTH_MEDIUM + BUTTON_SPACING
+
+        # Buttons to control alpha-beta pruning max depth
+        depth_decrease = self.fig.add_axes([x_pos, BUTTON_Y_BOTTOM, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
+        self.buttons['decrease_depth'] = Button(depth_decrease, 'Depth -')
+        self.buttons['decrease_depth'].on_clicked(callbacks.get('decrease_depth'))
+        x_pos += BUTTON_WIDTH_SMALL + BUTTON_SPACING
+
+        depth_increase = self.fig.add_axes([x_pos, BUTTON_Y_BOTTOM, BUTTON_WIDTH_SMALL, BUTTON_HEIGHT])
+        self.buttons['increase_depth'] = Button(depth_increase, 'Depth +')
+        self.buttons['increase_depth'].on_clicked(callbacks.get('increase_depth'))
+        x_pos += BUTTON_WIDTH_SMALL + BUTTON_SPACING
+
         # New grid button
-        ax_new_grid = self.fig.add_axes([x_pos, BUTTON_Y, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
+        ax_new_grid = self.fig.add_axes([x_pos, BUTTON_Y_BOTTOM, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
         self.buttons['new_grid'] = Button(ax_new_grid, 'New Grid')
         self.buttons['new_grid'].on_clicked(callbacks.get('new_grid'))
+        x_pos += BUTTON_WIDTH_MEDIUM + BUTTON_SPACING
+
+        # Noise level buttons
+        ax_no_noise = self.fig.add_axes([x_pos, BUTTON_Y_BOTTOM, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
+        self.buttons['no_noise'] = Button(ax_no_noise, 'No Noise')
+        self.buttons['no_noise'].on_clicked(callbacks.get('no_noise'))
+        x_pos += BUTTON_WIDTH_MEDIUM + BUTTON_SPACING
+
+        ax_low_noise = self.fig.add_axes([x_pos, BUTTON_Y_BOTTOM, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
+        self.buttons['low_noise'] = Button(ax_low_noise, 'Low Noise')
+        self.buttons['low_noise'].on_clicked(callbacks.get('low_noise'))
+        x_pos += BUTTON_WIDTH_MEDIUM + BUTTON_SPACING
+
+        ax_med_noise = self.fig.add_axes([x_pos, BUTTON_Y_BOTTOM, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
+        self.buttons['med_noise'] = Button(ax_med_noise, 'Med Noise')
+        self.buttons['med_noise'].on_clicked(callbacks.get('med_noise'))
+        x_pos += BUTTON_WIDTH_MEDIUM + BUTTON_SPACING
+
+        ax_high_noise = self.fig.add_axes([x_pos, BUTTON_Y_BOTTOM, BUTTON_WIDTH_MEDIUM, BUTTON_HEIGHT])
+        self.buttons['high_noise'] = Button(ax_high_noise, 'High Noise')
+        self.buttons['high_noise'].on_clicked(callbacks.get('high_noise'))
 
     def _draw_grid_tiles(self):
         for i in range(self.n):
             for j in range(self.n):
                 val = self.current_grid[i][j]
+                # Get noisy observation if noise is enabled
+                noisy_val = self.get_tile_with_noise(i, j) if self.noise_level != 'none' else None
                 display_val, color, fg = TileRenderer.get_tile_appearance(
                     val, i, j, self.grid_instance, self.fog_of_war,
-                    self.human_player, self.ai_solution_path, self.ai_solution_path_p2
+                    self.human_player, self.ai_solution_path, self.ai_solution_path_p2, noisy_val
                 )
 
                 rect = patches.Rectangle((j, self.n - i - 1), 1, 1,
@@ -209,7 +242,7 @@ class GUIManager:
             self.last_ai_info = info
 
         ai_info = self.last_ai_info if self.last_ai_info else info
-        title = TitleFormatter.format_dual_title(ai_info, player2_info, self.player_mode, self.human_player.human_cost)
+        title = TitleFormatter.format_dual_title(ai_info, player2_info, self.player_mode, self.human_player.human_cost, self.noise_level)
         self.fig.suptitle(title, fontsize=12, fontweight='bold', y=0.98)
         self.fig.canvas.draw_idle()
 
@@ -230,6 +263,8 @@ class GUIManager:
         self.last_ai_info = None
         self.path_walking.stop()
         self.human_player.reset()
+        # Invalidate sensor cache for new grid
+        self.sensor_model.invalidate_cache()
         if self.fog_of_war:
             # Re-reveal initial tiles for human mode
             if self.current_grid:
@@ -266,6 +301,41 @@ class GUIManager:
 
                 self._redraw_grid()
                 self.update_title(self.human_player.get_state())
+
+    def set_noise_level(self, level):
+        # Invalidate cache BEFORE changing level to ensure clean state
+        self.sensor_model.invalidate_cache()
+        self.noise_level = level
+        self.sensor_model.set_noise_level(level)
+        self._redraw_grid()
+        # Update title to show new noise level
+        if self.last_ai_info:
+            if self.player_mode == 'ai':
+                self.update_title(self.last_ai_info, self.last_ai_info)
+            else:
+                self.update_title(self.last_ai_info)
+        else:
+            # Create default info to display noise level even before first algorithm run
+            default_info = {'algorithm': 'None', 'cost': 0, 'runtime': 0, 'expanded_nodes': 0}
+            if self.player_mode == 'ai':
+                self.update_title(default_info, default_info)
+            else:
+                self.update_title(default_info)
+
+    def get_tile_with_noise(self, row, col):
+        if self.grid_instance and self.noise_level != 'none':
+            # Only apply noise to revealed tiles in fog of war mode
+            if self.fog_of_war:
+                if (row, col) in self.human_player.revealed_tiles or (row, col) == self.grid_instance.start1 or (row, col) == self.grid_instance.start2:
+                    return self.sensor_model.scan_cell_cached(self.grid_instance, row, col)
+            else:
+                # In AI vs AI mode, apply noise to all visible tiles - use cached version
+                return self.sensor_model.scan_cell_cached(self.grid_instance, row, col)
+
+        # No noise or invalid conditions - return actual value
+        if self.current_grid:
+            return self.current_grid[row][col]
+        return None
 
     def show_mode_selection(self, on_selection_callback):
         mode_selector = ModeSelector(self.fig, self.ax)

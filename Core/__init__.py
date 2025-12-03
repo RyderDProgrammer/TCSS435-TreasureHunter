@@ -2,6 +2,7 @@ from .grid_game import Grid
 from .gui_manager import GUIManager
 from .algorithm_runner import AlgorithmRunner
 from .game_modes import GameMode, SinglePlayerMode, AIvsAIMode, HumanvsAIMode
+from .sensor_model import SensorModel
 
 __all__ = [
     'Grid',
@@ -10,5 +11,6 @@ __all__ = [
     'GameMode',
     'SinglePlayerMode',
     'AIvsAIMode',
-    'HumanvsAIMode'
+    'HumanvsAIMode',
+    'SensorModel'
 ]

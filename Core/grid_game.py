@@ -1,7 +1,7 @@
 import random
 
 class Grid:
-    def __init__(self, n=15):
+    def __init__(self, n=20):
         self.n = n
         self.grid = []
         self.start = None
@@ -14,7 +14,7 @@ class Grid:
     def generate_grid(self):
         # Regenerate random counts for traps and treasures
         num_traps = random.randint(2, 3)
-        num_treasures = random.randint(3, 5)
+        num_treasures = random.randint(2, 4)
 
         # Initialize empty grid
         self.grid = [[' ' for _ in range(self.n)] for _ in range(self.n)]
