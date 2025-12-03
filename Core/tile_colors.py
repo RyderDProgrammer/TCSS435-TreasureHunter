@@ -5,7 +5,8 @@ class TileColors:
             if fog_of_war and not stepped_on:
                 # In fog of war, don't reveal trap until human steps on it
                 return 'lightblue' if is_player2 else '#3544CA'
-            return 'cyan'
+            # Trap shows player color when stepped on
+            return 'lightblue' if is_player2 else '#3544CA'
         elif tile_val == 'T':
             # Player 1 (dark blue) or Player 2 (light blue) - green only when both step on it
             return 'lightblue' if is_player2 else '#3544CA'
@@ -22,7 +23,8 @@ class TileColors:
         if tile_val == 'X':
             if fog_of_war and not stepped_on:
                 return 'lightblue'
-            return 'cyan'
+            # Both players stepped on trap - show purple
+            return 'purple'
         elif tile_val == 'T':
             return 'green'
         elif tile_val == 'S':
