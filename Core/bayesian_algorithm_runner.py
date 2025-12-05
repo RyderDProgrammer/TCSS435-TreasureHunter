@@ -128,6 +128,10 @@ class BayesianAlgorithmRunner:
             #move to target
             current_pos = target
 
+            # Record prediction outcome based on actual grid content
+            actual_tile = self.grid.get_tile(target[0], target[1])
+            self.belief_map.record_prediction(target, actual_tile)
+
             #scan around target
             observations = self.belief_map.scan_neighborhood_and_update(target, radius=scan_radius)
 
@@ -179,6 +183,9 @@ class BayesianAlgorithmRunner:
         print(f"Average Entropy: {avg_entropy:.4f}")
         print(f"Final Entropy: {self.belief_metrics['current_entropy']:.4f}")
         print(f"Solution Path: {self.solution_path}")
+        print(f"Detection Accuracy: {self.belief_metrics['detection_accuracy']:.3f}")
+        print(f"Correct Predictions: {self.belief_metrics['correct_predictions']}/{self.belief_metrics['predictions']}")    
+
 
         return {
             'path': self.solution_path,

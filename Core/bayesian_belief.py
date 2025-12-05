@@ -31,6 +31,10 @@ class BayesianBeliefMap:
         #grid reference
         self.grid_instance = None
 
+        # for detection accuracy
+        self.predictions = 0
+        self.correct_predictions = 0
+
     def set_grid(self, grid_instance):
         self.grid_instance = grid_instance
 
@@ -219,13 +223,21 @@ class BayesianBeliefMap:
         self.entropy_history.append(entropy)
 
     def get_metrics(self):
+        accuracy = (
+            self.correct_predictions / self.predictions
+            if self.predictions > 0 else 0
+        )
+
         return {
             'current_entropy': self.calculate_entropy(),
             'entropy_history': self.entropy_history.copy(),
             'belief_updates': self.belief_updates,
             'observed_cells': len(self.observed_cells),
             'found_treasures': len(self.found_treasures),
-            'treasures_remaining': self.num_treasures - len(self.found_treasures)
+            'treasures_remaining': self.num_treasures - len(self.found_treasures),
+            'predictions': self.predictions,
+            'correct_predictions': self.correct_predictions,
+            'detection_accuracy': accuracy
         }
 
     def should_continue_search(self):
@@ -238,3 +250,13 @@ class BayesianBeliefMap:
             for c in range(self.n):
                 row_vals.append(f"{self.beliefs[r][c]:.4f}")
             print(" ".join(row_vals))
+
+    # detecting accuracy
+    def record_prediction(self, position, actual_tile):
+        """Record whether selecting this cell was a correct prediction."""
+
+        self.predictions += 1
+
+        # True positive: predicted treasure and correct
+        if actual_tile == 'T':
+            self.correct_predictions += 1
