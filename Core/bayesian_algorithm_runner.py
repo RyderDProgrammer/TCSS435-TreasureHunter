@@ -70,6 +70,9 @@ class BayesianAlgorithmRunner:
         #initialize belief with known walls and start position
         self.belief_map.initialize_beliefs(ai_start, self.grid.walls)
 
+        # --- Heatmap at t = 0 ---
+        self.belief_map.print_belief_grid(title = f"Belief at t = 0 scans")
+
         #perform initial scan around start position
         scan_radius = 2
         self.belief_map.scan_neighborhood_and_update(ai_start, radius=scan_radius)
@@ -128,11 +131,18 @@ class BayesianAlgorithmRunner:
             #scan around target
             observations = self.belief_map.scan_neighborhood_and_update(target, radius=scan_radius)
 
+            # --- Heatmap after each scan ---
+            self.belief_map.print_belief_grid(title = f"Belief after t = {iteration} scans")
+
             #check found treasure at target
             actual_tile = self.grid.get_tile(target[0], target[1])
             if actual_tile == 'T':
                 self.belief_map.confirm_treasure_found(target)
                 self.treasures_found += 1
+                
+                # --- Heatmap at detection ---
+                self.belief_map.print_belief_grid(title = f"Belief at detection")
+
                 #stop if all treasures found
                 if self.treasures_found >= self.total_treasures:
                     break
@@ -169,7 +179,6 @@ class BayesianAlgorithmRunner:
         print(f"Average Entropy: {avg_entropy:.4f}")
         print(f"Final Entropy: {self.belief_metrics['current_entropy']:.4f}")
         print(f"Solution Path: {self.solution_path}")
-        print(f"Belief at Detection: {self.belief_map.get_beliefs}")
 
         return {
             'path': self.solution_path,

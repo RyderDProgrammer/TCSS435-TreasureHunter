@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 
 class BayesianBeliefMap:
@@ -230,5 +231,10 @@ class BayesianBeliefMap:
     def should_continue_search(self):
         return len(self.found_treasures) < self.num_treasures
 
-    def get_beliefs(self):
-        return self.beliefs
+    def print_belief_grid(self, title="Belief Grid"):
+        print(f"\n=== {title} ===")
+        for r in range(self.n):
+            row_vals = []
+            for c in range(self.n):
+                row_vals.append(f"{self.beliefs[r][c]:.4f}")
+            print(" ".join(row_vals))
