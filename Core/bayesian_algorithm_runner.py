@@ -1,4 +1,5 @@
 import time
+import numpy
 from Core.bayesian_belief import BayesianBeliefMap
 from Core.path_calculator import PathCostCalculator
 
@@ -154,6 +155,9 @@ class BayesianAlgorithmRunner:
         #get belief metrics
         self.belief_metrics = self.belief_map.get_metrics()
 
+        # get average entropy
+        avg_entropy = numpy.average(self.belief_metrics['entropy_history'])
+
         #print summary
         print(f"Runtime {algorithm_name}: {self.current_runtime:.4f}s")
         print(f"Treasures Found: {self.treasures_found}/{self.total_treasures}")
@@ -162,8 +166,10 @@ class BayesianAlgorithmRunner:
         print(f"Total Steps: {self.total_steps}")
         print(f"Total Scans: {self.total_scans}")
         print(f"Belief Updates: {self.belief_metrics['belief_updates']}")
+        print(f"Average Entropy: {avg_entropy:.4f}")
         print(f"Final Entropy: {self.belief_metrics['current_entropy']:.4f}")
         print(f"Solution Path: {self.solution_path}")
+        print(f"Belief at Detection: {self.belief_map.get_beliefs}")
 
         return {
             'path': self.solution_path,

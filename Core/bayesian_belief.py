@@ -198,7 +198,7 @@ class BayesianBeliefMap:
         if len(probs) == 0:
             return 0.0
 
-        entropy = -np.sum(probs * np.log(probs + 1e-10))
+        entropy = -np.sum(probs * np.log(probs + 1e-12))
         return entropy
 
     def _normalize_beliefs(self):
@@ -229,3 +229,6 @@ class BayesianBeliefMap:
 
     def should_continue_search(self):
         return len(self.found_treasures) < self.num_treasures
+
+    def get_beliefs(self):
+        return self.beliefs
