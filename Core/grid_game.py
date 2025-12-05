@@ -1,9 +1,11 @@
 import random
+import numpy as np
 
 class Grid:
-    def __init__(self, n=20):
+    def __init__(self, n=20, seed=None):
         self.n = n
         self.grid = []
+        self.seed = seed
         self.start = None
         self.start1 = None  # Player 1 starting position (AI or first player)
         self.start2 = None  # Player 2 starting position (Human or second player)
@@ -11,7 +13,15 @@ class Grid:
         self.traps = []
         self.walls = []
 
-    def generate_grid(self):
+    def generate_grid(self, seed=None):
+        # Set random seed for reproducibility
+        if seed is not None:
+            random.seed(seed)
+            np.random.seed(seed)
+        elif self.seed is not None:
+            random.seed(self.seed)
+            np.random.seed(self.seed)
+
         # Regenerate random counts for traps and treasures
         num_traps = random.randint(2, 3)
         num_treasures = random.randint(2, 4)

@@ -5,7 +5,7 @@ from Algorithms import BFS, DFS, UCS, A_Star, Greedy_BFS, MiniMax, Alpha_Beta
 class TreasureHunterGame:
     def __init__(self):
         # Initialize core components
-        self.grid = Grid(n=15)
+        self.grid = Grid(n=15, seed=None)  #use seed 42 for reproducible grids
         self.gui = GUIManager(grid_size=15)
 
         # Initialize both regular and Bayesian algorithm runners
