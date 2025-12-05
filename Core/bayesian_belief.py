@@ -35,6 +35,9 @@ class BayesianBeliefMap:
         self.predictions = 0
         self.correct_predictions = 0
 
+        # for detecting entropy at detection
+        self.entropy_at_detection = []
+
     def set_grid(self, grid_instance):
         self.grid_instance = grid_instance
 
@@ -145,6 +148,10 @@ class BayesianBeliefMap:
 
         self._record_entropy()
 
+        # capture entropy at detection
+        current_entropy = self.calculate_entropy()
+        self.entropy_at_detection.append(current_entropy)
+
     def confirm_empty(self, position):
         if position not in self.found_treasures and position not in self.confirmed_walls:
             self.confirmed_empty.add(position)
@@ -228,6 +235,11 @@ class BayesianBeliefMap:
             if self.predictions > 0 else 0
         )
 
+        avg_detect_entropy = (
+            sum(self.entropy_at_detection) / len(self.entropy_at_detection)
+            if self.entropy_at_detection else 0
+        )
+
         return {
             'current_entropy': self.calculate_entropy(),
             'entropy_history': self.entropy_history.copy(),
@@ -237,7 +249,9 @@ class BayesianBeliefMap:
             'treasures_remaining': self.num_treasures - len(self.found_treasures),
             'predictions': self.predictions,
             'correct_predictions': self.correct_predictions,
-            'detection_accuracy': accuracy
+            'detection_accuracy': accuracy,
+            'entropy_at_detection': self.entropy_at_detection.copy(),
+            'avg_entropy_at_detection': avg_detect_entropy
         }
 
     def should_continue_search(self):
